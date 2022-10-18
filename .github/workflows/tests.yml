@@ -18,7 +18,7 @@ jobs:
           command: check
 
   test:
-    name: Test Suite
+    name: Test emu6502vm
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -33,7 +33,7 @@ jobs:
 
 
   test_cpu:
-    name: Test Suite
+    name: Test vm6502
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

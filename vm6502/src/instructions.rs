@@ -1,26 +1,66 @@
-
 use crate::prelude::*;
 
 pub mod prelude {
-   pub use crate::instructions::{Instructions};
+    pub use crate::instructions::Instructions;
 }
 
-
 pub trait Instructions {
-    fn adc(&mut self); fn and(&mut self); fn asl(&mut self); fn bcc(&mut self); 
-    fn bcs(&mut self); fn beq(&mut self); fn bit(&mut self); fn bmi(&mut self); 
-    fn bne(&mut self); fn bpl(&mut self); fn brk(&mut self); fn bvc(&mut self);
-    fn bvs(&mut self); fn clc(&mut self); fn cld(&mut self); fn cli(&mut self); 
-    fn clv(&mut self); fn cmp(&mut self); fn cpx(&mut self); fn cpy(&mut self); 
-    fn dec(&mut self); fn dex(&mut self); fn dey(&mut self); fn eor(&mut self); 
-    fn inc(&mut self); fn inx(&mut self); fn iny(&mut self); fn jmp(&mut self); 
-    fn jsr(&mut self); fn lda(&mut self); fn ldx(&mut self); fn ldy(&mut self); 
-    fn lsr(&mut self); fn nop(&mut self); fn ora(&mut self); fn pha(&mut self); 
-    fn php(&mut self); fn pla(&mut self); fn plp(&mut self); fn rol(&mut self); 
-    fn ror(&mut self); fn rti(&mut self); fn rts(&mut self); fn sbc(&mut self); 
-    fn sec(&mut self); fn sed(&mut self); fn sei(&mut self); fn sta(&mut self); 
-    fn stx(&mut self); fn sty(&mut self); fn tax(&mut self); fn tay(&mut self); 
-    fn tsx(&mut self); fn txa(&mut self); fn txs(&mut self); fn tya(&mut self);
+    fn adc(&mut self);
+    fn and(&mut self);
+    fn asl(&mut self);
+    fn bcc(&mut self);
+    fn bcs(&mut self);
+    fn beq(&mut self);
+    fn bit(&mut self);
+    fn bmi(&mut self);
+    fn bne(&mut self);
+    fn bpl(&mut self);
+    fn brk(&mut self);
+    fn bvc(&mut self);
+    fn bvs(&mut self);
+    fn clc(&mut self);
+    fn cld(&mut self);
+    fn cli(&mut self);
+    fn clv(&mut self);
+    fn cmp(&mut self);
+    fn cpx(&mut self);
+    fn cpy(&mut self);
+    fn dec(&mut self);
+    fn dex(&mut self);
+    fn dey(&mut self);
+    fn eor(&mut self);
+    fn inc(&mut self);
+    fn inx(&mut self);
+    fn iny(&mut self);
+    fn jmp(&mut self);
+    fn jsr(&mut self);
+    fn lda(&mut self);
+    fn ldx(&mut self);
+    fn ldy(&mut self);
+    fn lsr(&mut self);
+    fn nop(&mut self);
+    fn ora(&mut self);
+    fn pha(&mut self);
+    fn php(&mut self);
+    fn pla(&mut self);
+    fn plp(&mut self);
+    fn rol(&mut self);
+    fn ror(&mut self);
+    fn rti(&mut self);
+    fn rts(&mut self);
+    fn sbc(&mut self);
+    fn sec(&mut self);
+    fn sed(&mut self);
+    fn sei(&mut self);
+    fn sta(&mut self);
+    fn stx(&mut self);
+    fn sty(&mut self);
+    fn tax(&mut self);
+    fn tay(&mut self);
+    fn tsx(&mut self);
+    fn txa(&mut self);
+    fn txs(&mut self);
+    fn tya(&mut self);
 }
 
 impl Instructions for VirtM {
@@ -163,8 +203,7 @@ impl Instructions for VirtM {
         todo!();
     }
 
-    fn nop(&mut self) {
-    }
+    fn nop(&mut self) {}
 
     fn ora(&mut self) {
         let data = self.fetch();

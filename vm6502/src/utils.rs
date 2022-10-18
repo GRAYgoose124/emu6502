@@ -1,8 +1,7 @@
-
 pub mod prelude {
+    pub use crate::stuff_program_at_end;
     pub use crate::utils::status_macros::Status;
-    pub use crate::{status, make_status};
-    pub use crate::{stuff_program_at_end};
+    pub use crate::{make_status, status};
 }
 
 #[macro_use]
@@ -85,5 +84,4 @@ mod status_macros {
             0b00000000 $(| status!($flag))*
         };
     }
-
 }

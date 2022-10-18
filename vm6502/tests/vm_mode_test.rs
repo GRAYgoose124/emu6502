@@ -1,4 +1,3 @@
-
 use vm6502::prelude::*;
 
 #[test]

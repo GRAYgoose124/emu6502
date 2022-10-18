@@ -17,7 +17,6 @@ fn test_vm_stack() {
         assert_eq!(vm.registers.ac, test[0x0FF - i - 1]);
     }
 
-
     println!("{:?}", vm);
 }
 
@@ -45,7 +44,7 @@ fn test_vm_status() {
     let mut vm = VirtM::new();
     vm.reset_status();
     assert_eq!(vm.registers.sr, 0x00);
-    
+
     for i in 0..0x08 {
         vm.set_status(Status::from(i), true);
         vm.flip_status(Status::from(i));
@@ -56,7 +55,7 @@ fn test_vm_status() {
 }
 
 #[test]
-fn test_vm_insert_program(){
+fn test_vm_insert_program() {
     let mut vm = VirtM::new();
     let prog = "BADA55AB5214BADA55AB5214BADA55AB5214BADA55AB5214BADA55AB5214BADA55AB5214";
     let decoded = decode(prog).unwrap();

@@ -1,15 +1,15 @@
 use core::fmt::{Debug, Formatter, Result};
 
 use bytes::BytesMut;
-use hex::decode;
 use derivative::Derivative;
+use hex::decode;
 
 use crate::prelude::*;
 
 pub mod prelude {
-    pub use crate::vm::VirtM;
     pub use crate::vm::StackInterface;
     pub use crate::vm::StatusInterface;
+    pub use crate::vm::VirtM;
 }
 
 #[derive(Derivative)]
@@ -27,7 +27,7 @@ pub struct VirtM {
 
     #[derivative(Default(value = "(0x0200, 0xFFFF)"))]
     pub heap_bounds: (usize, usize),
-    
+
     #[derivative(Default(value = "(0x0000, 0xFDFF)"))]
     pub vheap_bounds: (usize, usize),
 
@@ -35,7 +35,6 @@ pub struct VirtM {
     pub addr_mode: Mode,
 }
 
-#[feature(mixed_integer_ops)]
 impl VirtM {
     pub fn new() -> Self {
         VirtM::default()
@@ -55,22 +54,22 @@ impl VirtM {
                 let ll = self.flatmap[self.registers.pc as usize + 1];
                 let hh = self.flatmap[self.registers.pc as usize + 2];
                 self.flatmap[(hh as usize) << 8 | ll as usize]
-            },
+            }
             // OPC $LLHH,X
             Mode::AbsoluteX => {
                 let ll = self.flatmap[self.registers.pc as usize + 1];
                 let hh = self.flatmap[self.registers.pc as usize + 2];
                 self.flatmap[(hh as usize) << 8 | ll as usize + self.registers.x as usize]
-            },
+            }
             // OPC $LLHH,Y
             Mode::AbsoluteY => {
                 let ll = self.flatmap[self.registers.pc as usize + 1];
                 let hh = self.flatmap[self.registers.pc as usize + 2];
                 self.flatmap[(hh as usize) << 8 | ll as usize + self.registers.y as usize]
-            },
+            }
             // OPC #$BB
             Mode::Immediate => self.flatmap[self.registers.pc as usize + 1],
-            // OPC 
+            // OPC
             Mode::Implied => 0,
             // OPC ($LLHH)
             Mode::Indirect => {
@@ -78,46 +77,46 @@ impl VirtM {
                 let hh = self.flatmap[self.registers.pc as usize + 2];
                 let addr = (hh as usize) << 8 | ll as usize;
                 self.flatmap[addr]
-            },
+            }
             // OPC ($LL, X)
             // operand is zeropage address; effective address is word in (LL + X, LL + X + 1),
             // inc. without carry: C.w($00LL + X)
             Mode::IndirectX => {
-                let ll = self.flatmap[(self.registers.pc+1) as usize];
+                let ll = self.flatmap[(self.registers.pc + 1) as usize];
                 let ell = self.flatmap[ll as usize + self.registers.x as usize];
                 let ehh = self.flatmap[ll as usize + self.registers.x as usize + 1];
                 let addr = (ehh as usize) << 8 | ell as usize;
-                
+
                 self.flatmap[addr]
-            },
+            }
             // OPC ($LL), Y
-            // operand is zeropage address; effective address is word in (LL, LL + 1) 
+            // operand is zeropage address; effective address is word in (LL, LL + 1)
             // incremented by Y with carry: C.w($00LL) + Y
             // TODO: check if this is correct.
             Mode::IndirectY => {
-                let ll = self.flatmap[(self.registers.pc+1) as usize];
+                let ll = self.flatmap[(self.registers.pc + 1) as usize];
                 let ell = self.flatmap[ll as usize];
                 let ehh = self.flatmap[ll as usize + 1];
                 let addr = (ehh as usize) << 8 | ell as usize + self.registers.y as usize;
-                
+
                 self.flatmap[addr]
-            },
+            }
             // OPC $BB
             Mode::Relative => {
                 let bb = self.flatmap[self.registers.pc as usize + 1];
                 // TODO: Write a test for this.
                 self.flatmap[self.registers.pc.wrapping_add_signed((bb as i8).into()) as usize]
-            },
+            }
             // OPC $LL
             Mode::ZeroPage => {
                 let ll = self.flatmap[self.registers.pc as usize + 1];
                 self.flatmap[ll as usize]
-            },
+            }
             // OPC $LL, X
             Mode::ZeroPageX => {
                 let ll = self.flatmap[self.registers.pc as usize + 1];
                 self.flatmap[ll as usize + self.registers.x as usize]
-            },
+            }
             // OPC $LL, Y
             Mode::ZeroPageY => {
                 let ll = self.flatmap[self.registers.pc as usize + 1];
@@ -132,7 +131,7 @@ impl VirtM {
             self.flatmap[offset + i] = *byte;
         }
     }
-}   
+}
 
 pub trait StatusInterface {
     fn flip_status(&mut self, flag: Status);
@@ -146,13 +145,13 @@ pub trait StatusInterface {
 impl StatusInterface for VirtM {
     fn flip_status(&mut self, flag: Status) {
         let status = self.registers.sr;
-        
+
         self.registers.sr = status ^ status!(flag);
     }
-    
+
     fn set_status(&mut self, flag: Status, value: bool) {
         let status = self.registers.sr;
-        
+
         if value {
             self.registers.sr = status | status!(flag);
         } else {
@@ -171,8 +170,6 @@ impl StatusInterface for VirtM {
     }
 }
 
-   
-
 pub trait StackInterface {
     fn pop(&mut self);
     fn peek(&mut self); // Not congruent with spec.
@@ -184,7 +181,7 @@ impl StackInterface for VirtM {
     fn pop(&mut self) {
         let value = self.flatmap[self.stack_bounds.1 - self.registers.sp as usize];
         self.registers.sp += 0x01;
-        self.registers.ac = value;  // VM internal side effect.
+        self.registers.ac = value; // VM internal side effect.
     }
 
     // Debug / Not Spec
@@ -202,7 +199,11 @@ impl StackInterface for VirtM {
 
 impl Debug for VirtM {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "VirtM {{ registers: {:?}, flatmap: {:?} }}", self.registers, self.flatmap)
+        write!(
+            f,
+            "VirtM {{ registers: {:?}, flatmap: {:?} }}",
+            self.registers, self.flatmap
+        )
     }
 }
 

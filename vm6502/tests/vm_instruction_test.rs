@@ -1,6 +1,5 @@
 use vm6502::prelude::*;
 
-
 #[test]
 fn test_vm_instruction_adc_acc() {
     let mut vm = VirtM::new();
