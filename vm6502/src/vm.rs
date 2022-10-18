@@ -44,12 +44,28 @@ impl VirtM {
         self.addr_mode = mode;
     }
 
-    pub fn fetch(&mut self, addr: usize) -> u8 {
+    pub fn fetch(&mut self) -> u8 {
         match self.addr_mode {
             // OPC A
             Mode::Accumulator => self.registers.ac,
             // OPC $LLHH
-            Mode::Absolute => self.flatmap[addr],
+            // operand is address $HHLL
+            Mode::Absolute => {
+                let ll = self.flatmap[self.registers.pc as usize + 1];
+                let hh = self.flatmap[self.registers.pc as usize + 2];
+                self.flatmap[(hh as usize) << 8 | ll as usize]
+            }
+            // OPC ($LL, X)
+            // operand is zeropage address; effective address is word in (LL + X, LL + X + 1),
+            // inc. without carry: C.w($00LL + X)
+            Mode::IndirectX => {
+                let ll = self.flatmap[(self.registers.pc+1) as usize];
+                let ell = self.flatmap[ll as usize + self.registers.x as usize];
+                let ehh = self.flatmap[ll as usize + self.registers.x as usize + 1];
+                let addr = (ehh as usize) << 8 | ell as usize;
+                
+                self.flatmap[addr]
+            }
             _ => todo!(),
         }
     }

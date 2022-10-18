@@ -25,7 +25,7 @@ pub trait Instructions {
 
 impl Instructions for VirtM {
     fn adc(&mut self) {
-        let value = self.fetch(0); // Fetch is directed by the internal mode.
+        let value = self.fetch(); // Fetch is directed by the internal mode.
 
         let result = self.registers.ac as u16 + value as u16;
 
@@ -167,7 +167,11 @@ impl Instructions for VirtM {
     }
 
     fn ora(&mut self) {
-        todo!();
+        let data = self.fetch();
+        self.registers.ac |= data;
+
+        self.set_status(Status::Zero, self.registers.ac == 0);
+        self.set_status(Status::Negative, self.registers.ac & 0x80 != 0);
     }
 
     fn pha(&mut self) {

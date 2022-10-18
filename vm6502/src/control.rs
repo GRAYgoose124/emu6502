@@ -1,3 +1,4 @@
+use std::fmt::{Debug, Formatter, Result};
 use bitmatch::bitmatch;
 
 use crate::prelude::*;
@@ -7,6 +8,7 @@ pub mod prelude {
     pub use crate::control::{VMControl};
 }
 
+#[derive(PartialEq)]
 pub enum Mode {
     Accumulator,
     Implied,
@@ -23,20 +25,44 @@ pub enum Mode {
     IndirectY,
 }
 
+impl Debug for Mode {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        match self {
+            Mode::Accumulator => write!(f, "Accumulator"),
+            Mode::Implied => write!(f, "Implied"),
+            Mode::Immediate => write!(f, "Immediate"),
+            Mode::ZeroPage => write!(f, "ZeroPage"),
+            Mode::ZeroPageX => write!(f, "ZeroPageX"),
+            Mode::ZeroPageY => write!(f, "ZeroPageY"),
+            Mode::Relative => write!(f, "Relative"),
+            Mode::Absolute => write!(f, "Absolute"),
+            Mode::AbsoluteX => write!(f, "AbsoluteX"),
+            Mode::AbsoluteY => write!(f, "AbsoluteY"),
+            Mode::Indirect => write!(f, "Indirect"),
+            Mode::IndirectX => write!(f, "IndirectX"),
+            Mode::IndirectY => write!(f, "IndirectY"),
+        }
+    }
+}
+
 pub trait VMControl {
-    fn match_instr(&mut self, instr: usize);
-    fn set_cc0_mode(&mut self, op: u8, mode: u8);
-    fn set_cc1_mode(&mut self, op: u8, mode: u8);
-    fn set_cc2_mode(&mut self, op: u8, mode: u8);
+    fn match_instr(&mut self, instr: u8);
+
+    /// macro? fn op_to_mode(&mut self, op: u8) -> (u8, u8);
+    
+
+    fn set_cc0_mode(&mut self, a: u8, b: u8);
+    fn set_cc1_mode(&mut self, a: u8, b: u8);
+    fn set_cc2_mode(&mut self, a: u8, b: u8);
 } 
 
 impl VMControl for VirtM {
-    fn set_cc1_mode(&mut self, op: u8, mode: u8) {
-        self.addr_mode = match mode {
+    fn set_cc1_mode(&mut self, a: u8, b: u8) {
+        self.addr_mode = match b {
             0x00 => Mode::IndirectX,
             0x01 => Mode::ZeroPage,
             0x02 => {
-                match op {
+                match a {
                     0x04 => panic!("Illegal opcode 0x04 for Immediate mode."),
                     _ => Mode::Immediate
                 }
@@ -46,52 +72,52 @@ impl VMControl for VirtM {
             0x05 => Mode::ZeroPageX,
             0x06 => Mode::AbsoluteY,
             0x07 => Mode::AbsoluteX,
-            _ => panic!("Invalid cc1 mode: {}", mode),
+            _ => panic!("Invalid cc1 mode: {}", b),
         }
     }
 
-    fn set_cc2_mode(&mut self, op: u8, mode: u8) {
-        self.addr_mode = match mode {
+    fn set_cc2_mode(&mut self, a: u8, b: u8) {
+        self.addr_mode = match b {
             0x00 => {
-                match op {
+                match a {
                     0x05 => Mode::Immediate,
-                    _ => panic!("Illegal opcode 0x{:02X} for ZeroPage mode.", op),
+                    _ => panic!("Illegal opcode 0x{:02X} for ZeroPage mode.", a),
                 }
             }
             0x01 => Mode::ZeroPage,
             0x02 => {
-                match op {
+                match a {
                     0x00..=0x03 => Mode::Accumulator,
                     0x04..=0x07 => Mode::Implied,
-                    _ => panic!("Illegal opcode 0x{:02X} for Accumulator/cargccccImplied mode.", op),
+                    _ => panic!("Illegal opcode 0x{:02X} for Accumulator/Implied mode.", a),
                 }
             },
             0x03 => Mode::Absolute,
             0x04 => Mode::ZeroPageX,
             0x05 => Mode::AbsoluteX,
-            _ => panic!("Invalid cc2 mode: {}", mode),
+            _ => panic!("Invalid cc2 mode: {}", b),
         }
     }
 
-    fn set_cc0_mode(&mut self, _op: u8, mode: u8) {
-        self.addr_mode = match mode {     
+    fn set_cc0_mode(&mut self, _a: u8, b: u8) {
+        self.addr_mode = match b {     
             0x00 => Mode::IndirectX,       
-            _ => panic!("Invalid cc0 mode: {}", mode),
+            _ => panic!("Invalid cc0 mode: {}", b),
         }
     }
 
     #[bitmatch]
-    fn match_instr(&mut self, addr: usize) {
+    fn match_instr(&mut self, instr: u8) {
         #[bitmatch]
-        match self.flatmap[addr] {
+        match instr {
             "00000000" => self.brk(),
             "00100000" => self.jsr(), // absolute jsr
             "01000000" => self.rti(),
             "01100000" => self.rts(),
             // cc = 01
-            "ooommm01" => {
-                self.set_cc1_mode(o, m);
-                match o {
+            "aaabbb01" => {
+                self.set_cc1_mode(a, b);
+                match a {
                     0x00 => self.ora(),   
                     0x01 => self.and(), 
                     0x02 => self.eor(), 
@@ -104,9 +130,9 @@ impl VMControl for VirtM {
                 }
             },
             // cc = 10
-            "ooommm10" => {
-                self.set_cc2_mode(o, m);
-                match o {
+            "aaabbb10" => {
+                self.set_cc2_mode(a, b);
+                match a {
                     0x00 => self.asl(),   
                     0x01 => self.rol(), 
                     0x02 => self.lsr(), 
@@ -119,9 +145,9 @@ impl VMControl for VirtM {
                 }
             },
             // cc = 00
-            "ooommm00" => {
-                self.set_cc0_mode(o, m);
-                match o {
+            "aaabbb00" => {
+                self.set_cc0_mode(a, b);
+                match a {
                     0x00 => self.bit(),   
                     0x01 => self.jmp(), 
                     0x02 => self.jmp(), 
