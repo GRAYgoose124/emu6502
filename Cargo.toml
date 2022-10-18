@@ -1,0 +1,13 @@
+[package]
+name = "emu6502vm"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bytes = "1.2.1"
+rand = "0.8.5"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies.vm6502]
+path = "vm6502"
