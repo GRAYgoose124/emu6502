@@ -1,3 +1,6 @@
+# emu6502
+![tests](https://github.com/GRAYgoose124/emu6502/actions/workflows/tests.yml/badge.svg)
+
 ## How to use   
 
     git clone git@github.com:GRAYgoose124/emu6502.git
