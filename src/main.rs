@@ -11,6 +11,15 @@ fn main() {
         vm.push();
     }
 
+    for _ in 0..0x0FF {
+        vm.pop();
+    }
+
+    vm.set_status(Status::Negative, true);
+
+    let prog = "BADA55BADA55BADA55BADA55BADA55BADA55BADA55";
+    vm.insert_program(vm.vheap_bounds.1 - (prog.len() / 2), prog);
+
     println!("{:?}", vm);
 }
 

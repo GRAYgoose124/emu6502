@@ -58,12 +58,13 @@ fn test_vm_status() {
 #[test]
 fn test_vm_insert_program(){
     let mut vm = VirtM::new();
-    let prog = "AB";
+    let prog = "BADA55AB5214BADA55AB5214BADA55AB5214BADA55AB5214BADA55AB5214BADA55AB5214";
     let decoded = decode(prog).unwrap();
 
-    vm.insert_program(0x0000, prog);
+    let offset = 0x0000;
+    vm.insert_program(offset, prog);
 
     for (i, byte) in decoded.iter().enumerate() {
-        assert_eq!(vm.flatmap[vm.heap_bounds.0 + i], *byte);
+        assert_eq!(vm.flatmap[vm.heap_bounds.0 + offset + i], *byte);
     }
 }

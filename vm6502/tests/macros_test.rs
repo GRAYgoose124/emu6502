@@ -42,3 +42,14 @@ fn test_make_status() {
     status = make_status!();
     assert_eq!(status, 0b00000000);
 }
+
+#[test]
+fn test_stuff_program_at_end() {
+    let mut vm = VirtM::new(); 
+
+    let prog = "BADA55BADA55BADA55BADA55BADA55BADA55BADA55";
+    stuff_program_at_end!(vm, prog);
+
+    assert_eq!(vm.flatmap[vm.heap_bounds.1 - (prog.len() / 2)], 0xBA);
+    println!("{:?}", vm);
+}

@@ -2,10 +2,19 @@
 pub mod prelude {
     pub use crate::utils::status_macros::Status;
     pub use crate::{status, make_status};
-
+    pub use crate::{stuff_program_at_end};
 }
 
-
+#[macro_use]
+mod vm_macros {
+    #[macro_export]
+    macro_rules! stuff_program_at_end {
+        ($vm:expr, $prog:expr) => {
+            let offset = $vm.vheap_bounds.1 - ($prog.len() / 2);
+            $vm.insert_program(offset, $prog);
+        };
+    }
+}
 
 #[macro_use]
 mod status_macros {

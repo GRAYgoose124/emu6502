@@ -17,15 +17,19 @@ pub mod prelude {
 pub struct VirtM {
     #[derivative(Default(value = "Registers::new()"))]
     pub registers: Registers,
-    #[derivative(Default(value = "BytesMut::zeroed(0xFF * 0xFF)"))]
+    #[derivative(Default(value = "BytesMut::zeroed(0xFFFF)"))]
     pub flatmap: BytesMut,
 
     #[derivative(Default(value = "(0x0000, 0x0099)"))]
     pub zero_bounds: (usize, usize),
     #[derivative(Default(value = "(0x0100, 0x01FF)"))]
     pub stack_bounds: (usize, usize),
+
     #[derivative(Default(value = "(0x0200, 0xFFFF)"))]
     pub heap_bounds: (usize, usize),
+    
+    #[derivative(Default(value = "(0x0000, 0xFDFF)"))]
+    pub vheap_bounds: (usize, usize),
 
     #[derivative(Default(value = "Mode::Absolute"))]
     pub addr_mode: Mode,
@@ -51,8 +55,9 @@ impl VirtM {
     }
 
     pub fn insert_program(&mut self, offset: usize, prog: &str) {
+        let offset = offset + self.heap_bounds.0;
         for (i, byte) in decode(prog).unwrap().iter().enumerate() {
-            self.flatmap[self.heap_bounds.0+offset+i] = *byte;
+            self.flatmap[offset + i] = *byte;
         }
     }
 }   
