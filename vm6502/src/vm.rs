@@ -135,6 +135,6 @@ impl Debug for VirtM {
 }
 
 pub trait HeapInterface {
-    fn aladdr(&mut self);
-    fn dealaddr(&mut self);
+    fn alloc(&mut self);
+    fn dealloc(&mut self);
 }

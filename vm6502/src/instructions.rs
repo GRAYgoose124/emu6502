@@ -1,5 +1,4 @@
 use bitmatch::bitmatch;
-use hex::decode;
 
 use crate::prelude::*;
 
@@ -351,7 +350,7 @@ impl Instructions for VirtM {
                 match op {
                     0x00..=0x03 => Mode::Accumulator,
                     0x04..=0x07 => Mode::Implied,
-                    _ => panic!("Illegal opcode 0x{:02X} for Accumulator/Implied mode.", op),
+                    _ => panic!("Illegal opcode 0x{:02X} for Accumulator/cargccccImplied mode.", op),
                 }
             },
             0x03 => Mode::Absolute,
@@ -361,8 +360,9 @@ impl Instructions for VirtM {
         }
     }
 
-    fn set_cc0_mode(&mut self, op: u8, mode: u8) {
-        self.addr_mode = match mode {            
+    fn set_cc0_mode(&mut self, _op: u8, mode: u8) {
+        self.addr_mode = match mode {     
+            0x00 => Mode::IndirectX,       
             _ => panic!("Invalid cc0 mode: {}", mode),
         }
     }
