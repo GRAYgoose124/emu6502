@@ -3,15 +3,22 @@ use core::fmt::{Debug, Formatter, Result};
 use bytes::BytesMut;
 use derivative::Derivative;
 
-use crate::registers::Registers;
-use crate::memory::Memory;
+use crate::prelude::*;
+
+pub mod prelude {
+    pub use crate::vm::StackInterface;
+    pub use crate::vm::VirtM;
+
+    pub use crate::make_status;
+    pub use crate::status;
+}
 
 #[derive(Derivative)]
 #[derivative(Default)]
 pub struct VirtM {
     #[derivative(Default(value = "Registers::new()"))]
     pub registers: Registers,
-    #[derivative(Default(value = "BytesMut::zeroed(0xFFFF)"))]
+    #[derivative(Default(value = "BytesMut::zeroed(0xFF * 0xFF)"))]
     pub flatmap: BytesMut,
 
     #[derivative(Default(value = "(0x0000, 0x0099)"))]
@@ -59,4 +66,9 @@ impl Debug for VirtM {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "VirtM {{ registers: {:?}, flatmap: {:?} }}", self.registers, self.flatmap)
     }
+}
+
+pub trait HeapInterface {
+    fn alloc(&mut self);
+    fn dealloc(&mut self);
 }

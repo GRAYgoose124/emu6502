@@ -1,7 +1,4 @@
-use rand::prelude::*;
-
-use vm6502::vm::VirtM;
-use vm6502::vm::StackInterface;
+use vm6502::prelude::*;
 
 fn main() {
     let mut vm = VirtM::new();
