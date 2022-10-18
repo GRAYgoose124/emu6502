@@ -1,6 +1,8 @@
 
 pub mod prelude {
     pub use crate::utils::status_macros::Status;
+    pub use crate::{status, make_status};
+
 }
 
 

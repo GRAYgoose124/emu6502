@@ -1,5 +1,3 @@
-use std::ops::{Index, IndexMut};
-
 /*
 PC	program counter	(16 bit)
 AC	accumulator	(8 bit)

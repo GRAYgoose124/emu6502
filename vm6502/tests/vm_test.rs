@@ -1,3 +1,5 @@
+use hex::decode;
+
 use vm6502::prelude::*;
 
 #[test]
@@ -51,4 +53,17 @@ fn test_vm_status() {
     }
 
     println!("{:?}", vm);
+}
+
+#[test]
+fn test_vm_insert_program(){
+    let mut vm = VirtM::new();
+    let prog = "AB";
+    let decoded = decode(prog).unwrap();
+
+    vm.insert_program(0x0000, prog);
+
+    for (i, byte) in decoded.iter().enumerate() {
+        assert_eq!(vm.flatmap[vm.heap_bounds.0 + i], *byte);
+    }
 }

@@ -1,6 +1,7 @@
 use core::fmt::{Debug, Formatter, Result};
 
 use bytes::BytesMut;
+use hex::decode;
 use derivative::Derivative;
 
 use crate::prelude::*;
@@ -9,9 +10,6 @@ pub mod prelude {
     pub use crate::vm::VirtM;
     pub use crate::vm::StackInterface;
     pub use crate::vm::StatusInterface;
-
-    pub use crate::make_status;
-    pub use crate::status;
 }
 
 #[derive(Derivative)]
@@ -28,11 +26,34 @@ pub struct VirtM {
     pub stack_bounds: (usize, usize),
     #[derivative(Default(value = "(0x0200, 0xFFFF)"))]
     pub heap_bounds: (usize, usize),
+
+    #[derivative(Default(value = "Mode::Absolute"))]
+    pub addr_mode: Mode,
 }
 
 impl VirtM {
     pub fn new() -> Self {
         VirtM::default()
+    }
+
+    pub fn set_mode(&mut self, mode: Mode) {
+        self.addr_mode = mode;
+    }
+
+    pub fn fetch(&mut self, addr: usize) -> u8 {
+        match self.addr_mode {
+            // OPC A
+            Mode::Accumulator => self.registers.ac,
+            // OPC $LLHH
+            Mode::Absolute => self.flatmap[addr],
+            _ => todo!(),
+        }
+    }
+
+    pub fn insert_program(&mut self, offset: usize, prog: &str) {
+        for (i, byte) in decode(prog).unwrap().iter().enumerate() {
+            self.flatmap[self.heap_bounds.0+offset+i] = *byte;
+        }
     }
 }   
 
@@ -109,6 +130,6 @@ impl Debug for VirtM {
 }
 
 pub trait HeapInterface {
-    fn alloc(&mut self);
-    fn dealloc(&mut self);
+    fn aladdr(&mut self);
+    fn dealaddr(&mut self);
 }
