@@ -11,8 +11,8 @@ fn main() {
     let test_vec: ArrayVec<u8, 0x0FF> = (0..0x0FF).map(|_| rand::random::<u8>()).collect();
     let test: [u8; 0x0FF] = test_vec.into_inner().unwrap();
 
-    for i in 0..0x0FF {
-        vm.registers.ac = test[i];
+    for item in &test {
+        vm.registers.ac = *item;
         vm.push();
     }
 

@@ -6,10 +6,14 @@ use hex::decode;
 
 use crate::prelude::*;
 
+mod stack;
+mod status;
+
 pub mod prelude {
-    pub use crate::vm::StackInterface;
-    pub use crate::vm::StatusInterface;
     pub use crate::vm::VirtM;
+
+    pub use crate::vm::stack::prelude::*;
+    pub use crate::vm::status::prelude::*;
 }
 
 #[derive(Derivative)]
@@ -130,88 +134,6 @@ impl VirtM {
         for (i, byte) in decode(prog).unwrap().iter().enumerate() {
             self.flatmap[offset + i] = *byte;
         }
-    }
-}
-
-pub trait StatusInterface {
-    fn flip_status(&mut self, flag: Status);
-
-    fn set_status(&mut self, flag: Status, value: bool);
-    fn get_status(&self, flag: Status) -> bool;
-
-    fn reset_status(&mut self);
-}
-
-impl StatusInterface for VirtM {
-    fn flip_status(&mut self, flag: Status) {
-        let status = self.registers.sr;
-
-        self.registers.sr = status ^ status!(flag);
-    }
-
-    fn set_status(&mut self, flag: Status, value: bool) {
-        let status = self.registers.sr;
-
-        if value {
-            self.registers.sr = status | status!(flag);
-        } else {
-            self.registers.sr = status & !status!(flag);
-        }
-    }
-
-    fn get_status(&self, flag: Status) -> bool {
-        let status = self.registers.sr;
-
-        status & status!(flag) != 0
-    }
-
-    fn reset_status(&mut self) {
-        self.registers.sr = 0x00;
-    }
-}
-
-pub trait StackInterface {
-    fn pop(&mut self);
-    fn peek(&mut self); // Not congruent with spec.
-
-    fn push(&mut self);
-}
-
-impl StackInterface for VirtM {
-    fn pop(&mut self) {
-        let value = self.flatmap[self.stack_bounds.1 - self.registers.sp as usize];
-
-        if cfg!(debug_assertions) {
-            println!("Popped value: {}. SP: {}", value, self.registers.sp);
-        }
-
-        if self.registers.sp > u8::MIN {
-            self.registers.sp -= 1;
-        } // TODO panic on underflow.
-        self.registers.ac = value; // VM internal side effect.
-    }
-
-    // Debug / Not Spec
-    fn peek(&mut self) {
-        let value = self.flatmap[self.stack_bounds.1 - self.registers.sp as usize];
-        self.registers.ac = value; // VM internal side effect.
-    }
-
-    fn push(&mut self) {
-        self.flatmap[self.stack_bounds.1 - (self.registers.sp as usize)] = self.registers.ac;
-
-        // TODO: Why is the retrieved value 0?
-        if cfg!(debug_assertions) {
-            println!(
-                "Pushed {} to stack. SP: {}",
-                self.flatmap[self.stack_bounds.1 - (self.registers.sp as usize)],
-                self.registers.sp
-            );
-        }
-
-        if self.registers.sp < u8::MAX {
-            self.registers.sp += 1;
-        } // TODO panic on overflow.
     }
 }
 
