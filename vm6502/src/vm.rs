@@ -66,6 +66,18 @@ impl VirtM {
                 
                 self.flatmap[addr]
             }
+            // OPC ($LL), Y
+            // operand is zeropage address; effective address is word in (LL, LL + 1) 
+            // incremented by Y with carry: C.w($00LL) + Y
+            // TODO: check if this is correct.
+            Mode::IndirectY => {
+                let ll = self.flatmap[(self.registers.pc+1) as usize];
+                let ell = self.flatmap[ll as usize];
+                let ehh = self.flatmap[ll as usize + 1];
+                let addr = (ehh as usize) << 8 | ell as usize + self.registers.y as usize;
+                
+                self.flatmap[addr]
+            }
             _ => todo!(),
         }
     }

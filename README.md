@@ -1,5 +1,5 @@
 # emu6502
-![tests](https://github.com/GRAYgoose124/emu6502/actions/workflows/tests.yml/badge.svg)
+![t](https://github.com/GRAYgoose124/emu6502/actions/workflows/tests.yml/badge.svg)
 
 ## How to use   
 
@@ -18,3 +18,8 @@ Or to build it as a standalone binary and run:
 To run the virtual cpu tests:
 
     cargo test -p vm6502
+
+
+## References
+[6502 Instruction Set](https://www.masswerk.at/6502/6502_instruction_set.html)
+[6502 Addressing Modes](http://www.emulator101.com/6502-addressing-modes.html)
