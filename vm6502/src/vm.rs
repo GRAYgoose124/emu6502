@@ -180,7 +180,14 @@ pub trait StackInterface {
 impl StackInterface for VirtM {
     fn pop(&mut self) {
         let value = self.flatmap[self.stack_bounds.1 - self.registers.sp as usize];
-        self.registers.sp += 0x01;
+
+        if cfg!(debug_assertions) {
+            println!("Popped value: {}. SP: {}", value, self.registers.sp);
+        }
+
+        if self.registers.sp > u8::MIN {
+            self.registers.sp -= 1;
+        } // TODO panic on underflow.
         self.registers.ac = value; // VM internal side effect.
     }
 
@@ -191,9 +198,20 @@ impl StackInterface for VirtM {
     }
 
     fn push(&mut self) {
-        let value = self.registers.ac; // VM internal retrieval.
-        self.flatmap[self.stack_bounds.1 - self.registers.sp as usize] = value;
-        self.registers.sp -= 0x01;
+        self.flatmap[self.stack_bounds.1 - (self.registers.sp as usize)] = self.registers.ac;
+
+        // TODO: Why is the retrieved value 0?
+        if cfg!(debug_assertions) {
+            println!(
+                "Pushed {} to stack. SP: {}",
+                self.flatmap[self.stack_bounds.1 - (self.registers.sp as usize)],
+                self.registers.sp
+            );
+        }
+
+        if self.registers.sp < u8::MAX {
+            self.registers.sp += 1;
+        } // TODO panic on overflow.
     }
 }
 
@@ -201,8 +219,10 @@ impl Debug for VirtM {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(
             f,
-            "VirtM {{ registers: {:?}, flatmap: {:?} }}",
-            self.registers, self.flatmap
+            "VirtM {{ registers: {:?}, stack: {:?}, heap[..0x400..]: {:?} }}",
+            self.registers,
+            &self.flatmap[self.stack_bounds.0..self.stack_bounds.1],
+            &self.flatmap[self.heap_bounds.0..0x400]
         )
     }
 }
