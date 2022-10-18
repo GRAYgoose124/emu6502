@@ -38,3 +38,17 @@ fn test_vm_registers() {
     println!("{:?}", vm);
 }
 
+#[test]
+fn test_vm_status() {
+    let mut vm = VirtM::new();
+    vm.reset_status();
+    assert_eq!(vm.registers.sr, 0x00);
+    
+    for i in 0..0x08 {
+        vm.set_status(Status::from(i), true);
+        vm.flip_status(Status::from(i));
+        assert_eq!(vm.get_status(Status::from(i)), false);
+    }
+
+    println!("{:?}", vm);
+}

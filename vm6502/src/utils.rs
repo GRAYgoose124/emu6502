@@ -1,22 +1,54 @@
 
 pub mod prelude {
-    pub use crate::utils::Status;
+    pub use crate::utils::status_macros::Status;
 }
 
-pub enum Status {
-    Negative,
-    Overflow,
-    Unused,
-    Break,
-    Decimal,
-    Interrupt,
-    Zero,
-    Carry,
-}
+
 
 #[macro_use]
 mod status_macros {
-    use super::*;
+    pub enum Status {
+        Negative,
+        Overflow,
+        Unused,
+        Break,
+        Decimal,
+        Interrupt,
+        Zero,
+        Carry,
+    }
+
+    impl From<u8> for Status {
+        fn from(value: u8) -> Self {
+            match value {
+                0 => Status::Negative,
+                1 => Status::Overflow,
+                2 => Status::Unused,
+                3 => Status::Break,
+                4 => Status::Decimal,
+                5 => Status::Interrupt,
+                6 => Status::Zero,
+                7 => Status::Carry,
+                _ => unreachable!(),
+            }
+        }
+    }
+
+    impl Into<u8> for Status {
+        fn into(self) -> u8 {
+            match self {
+                Status::Negative => 0,
+                Status::Overflow => 1,
+                Status::Unused => 2,
+                Status::Break => 3,
+                Status::Decimal => 4,
+                Status::Interrupt => 5,
+                Status::Zero => 6,
+                Status::Carry => 7,
+            }
+        }
+    }
+
     #[macro_export]
     macro_rules! status {
         ($flag: expr) => {
@@ -42,4 +74,5 @@ mod status_macros {
             0b00000000 $(| status!($flag))*
         };
     }
+
 }

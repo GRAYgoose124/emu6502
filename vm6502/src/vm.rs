@@ -6,8 +6,9 @@ use derivative::Derivative;
 use crate::prelude::*;
 
 pub mod prelude {
-    pub use crate::vm::StackInterface;
     pub use crate::vm::VirtM;
+    pub use crate::vm::StackInterface;
+    pub use crate::vm::StatusInterface;
 
     pub use crate::make_status;
     pub use crate::status;
@@ -34,6 +35,45 @@ impl VirtM {
         VirtM::default()
     }
 }   
+
+pub trait StatusInterface {
+    fn flip_status(&mut self, flag: Status);
+
+    fn set_status(&mut self, flag: Status, value: bool);
+    fn get_status(&self, flag: Status) -> bool;
+
+    fn reset_status(&mut self);
+}
+
+impl StatusInterface for VirtM {
+    fn flip_status(&mut self, flag: Status) {
+        let status = self.registers.sr;
+        
+        self.registers.sr = status ^ status!(flag);
+    }
+    
+    fn set_status(&mut self, flag: Status, value: bool) {
+        let status = self.registers.sr;
+        
+        if value {
+            self.registers.sr = status | status!(flag);
+        } else {
+            self.registers.sr = status & !status!(flag);
+        }
+    }
+
+    fn get_status(&self, flag: Status) -> bool {
+        let status = self.registers.sr;
+
+        status & status!(flag) != 0
+    }
+
+    fn reset_status(&mut self) {
+        self.registers.sr = 0x00;
+    }
+}
+
+   
 
 pub trait StackInterface {
     fn pop(&mut self);
