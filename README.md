@@ -14,5 +14,4 @@ Or to build it as a standalone binary and run:
 
 To run the virtual cpu tests:
 
-    cd vm6502
-    cargo test
+    cargo test -p vm6502
