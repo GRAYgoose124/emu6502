@@ -22,7 +22,7 @@ mod status_macros {
         Negative,
         Overflow,
         Unused,
-        Break,
+        Break, // Not Real - set when sr is pushed to stack.
         Decimal,
         Interrupt,
         Zero,
