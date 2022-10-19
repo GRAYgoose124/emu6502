@@ -13,6 +13,7 @@ fn main() {
 
     // let op = vm.g
     // vm.run_op()
+    vm.fill_stack(prog.into());
 
     println!("{:?}", vm);
 }

@@ -10,6 +10,7 @@
 //!
 //#![deny(missing_docs)]
 
+mod program;
 mod utils;
 mod vm;
 
@@ -19,4 +20,6 @@ pub mod prelude {
 
     // Virtual machine utilities and macros.
     pub use crate::utils::prelude::*;
+
+    pub use crate::program::prelude::*;
 }

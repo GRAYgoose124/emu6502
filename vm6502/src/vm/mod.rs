@@ -2,7 +2,6 @@ use core::fmt::{Debug, Formatter, Result};
 
 use bytes::BytesMut;
 use derivative::Derivative;
-use hex::decode;
 
 use crate::prelude::*;
 
@@ -13,6 +12,7 @@ mod stack;
 mod status;
 
 pub mod prelude {
+    pub use crate::program::prelude::*;
     pub use crate::vm::registers::Registers;
     pub use crate::vm::VirtualMachine;
 
@@ -53,23 +53,17 @@ impl VirtualMachine {
     pub fn new() -> Self {
         VirtualMachine::default()
     }
-
-    pub fn insert_program(&mut self, offset: usize, prog: &str) {
-        let offset = offset + self.heap_bounds.0;
-        for (i, byte) in decode(prog).unwrap().iter().enumerate() {
-            self.flatmap[offset + i] = *byte;
-        }
-    }
 }
 
 impl Debug for VirtualMachine {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(
             f,
-            "VirtualMachine {{ registers: {:?}, stack: {:?}, heap[..0x400..]: {:?} }}",
+            "VirtualMachine {{ registers: {:?}, stack: {:?}, heap[..0xFF]: {:?} }}",
             self.registers,
             hex::encode(&self.flatmap[self.stack_bounds.0..self.stack_bounds.1]).to_uppercase(),
-            hex::encode(&self.flatmap[self.heap_bounds.0..self.heap_bounds.0 + 0xFF]).to_uppercase()
+            hex::encode(&self.flatmap[self.heap_bounds.0..self.heap_bounds.0 + 0xFF])
+                .to_uppercase()
         )
     }
 }

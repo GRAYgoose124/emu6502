@@ -34,15 +34,6 @@ impl StackInterface for VirtualMachine {
     fn push(&mut self) {
         self.flatmap[self.stack_bounds.1 - (self.registers.sp as usize)] = self.registers.ac;
 
-        // TODO: Why is the retrieved value 0?
-        if cfg!(debug_assertions) {
-            println!(
-                "Pushed {} to stack. SP: {}",
-                self.flatmap[self.stack_bounds.1 - (self.registers.sp as usize)],
-                self.registers.sp
-            );
-        }
-
         if self.registers.sp < u8::MAX {
             self.registers.sp += 1;
         } // TODO panic on overflow.
