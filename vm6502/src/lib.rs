@@ -1,14 +1,22 @@
-mod control;
-mod instructions;
-mod registers;
+//! 6502 virtual machine implementation.
+//!
+//! This crate provides a virtual machine for the 6502 CPU. It is designed to be
+//! used as a library, with no frontend. The virtual machine is implemented as a
+//! struct, `VirtM`, which contains all the state of the machine. The state is
+//! stored in a flat array, which is indexed by the `Registers` struct. The
+//! virtual machine is also implemented as a trait, `VMControl`, which provides
+//! methods for manipulating the state of the machine.
+//!
+//!
+//#![deny(missing_docs)]
+
 mod utils;
 mod vm;
 
 pub mod prelude {
-    pub use crate::registers::Registers;
-
-    pub use crate::control::prelude::*;
-    pub use crate::instructions::prelude::*;
-    pub use crate::utils::prelude::*;
+    // Virtual machine implementation.
     pub use crate::vm::prelude::*;
+
+    // Virtual machine utilities and macros.
+    pub use crate::utils::prelude::*;
 }

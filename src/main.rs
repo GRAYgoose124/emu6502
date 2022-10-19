@@ -3,7 +3,7 @@ use arrayvec::ArrayVec;
 use vm6502::prelude::*;
 
 fn main() {
-    let mut vm = VirtM::new();
+    let mut vm = VirtualMachine::new();
     vm.registers.ac = 0x01;
     vm.registers.sp = 0xFF;
     vm.flatmap[0x0000] = 0x01;

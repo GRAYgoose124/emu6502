@@ -45,7 +45,7 @@ fn test_make_status() {
 
 #[test]
 fn test_stuff_program_at_end() {
-    let mut vm = VirtM::new();
+    let mut vm = VirtualMachine::new();
 
     let prog = "BADA55BADA55BADA55BADA55BADA55BADA55BADA55";
     stuff_program_at_end!(vm, prog);

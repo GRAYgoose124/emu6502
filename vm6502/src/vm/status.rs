@@ -14,7 +14,7 @@ pub trait StatusInterface {
     fn reset_status(&mut self);
 }
 
-impl StatusInterface for VirtM {
+impl StatusInterface for VirtualMachine {
     fn flip_status(&mut self, flag: Status) {
         let status = self.registers.sr;
 

@@ -6,11 +6,21 @@ use hex::decode;
 
 use crate::prelude::*;
 
+mod control;
+mod instructions;
+mod registers;
 mod stack;
 mod status;
 
 pub mod prelude {
-    pub use crate::vm::VirtM;
+    pub use crate::vm::registers::Registers;
+    pub use crate::vm::VirtualMachine;
+
+    // Virtual machine control functionality.
+    pub use crate::vm::control::prelude::*;
+
+    // Virtual machine instructions set.
+    pub use crate::vm::instructions::prelude::*;
 
     pub use crate::vm::stack::prelude::*;
     pub use crate::vm::status::prelude::*;
@@ -18,7 +28,7 @@ pub mod prelude {
 
 #[derive(Derivative)]
 #[derivative(Default)]
-pub struct VirtM {
+pub struct VirtualMachine {
     #[derivative(Default(value = "Registers::new()"))]
     pub registers: Registers,
     #[derivative(Default(value = "BytesMut::zeroed(0xFFFF)"))]
@@ -39,13 +49,9 @@ pub struct VirtM {
     pub addr_mode: Mode,
 }
 
-impl VirtM {
+impl VirtualMachine {
     pub fn new() -> Self {
-        VirtM::default()
-    }
-
-    pub fn set_mode(&mut self, mode: Mode) {
-        self.addr_mode = mode;
+        VirtualMachine::default()
     }
 
     pub fn fetch(&mut self) -> u8 {
@@ -137,11 +143,11 @@ impl VirtM {
     }
 }
 
-impl Debug for VirtM {
+impl Debug for VirtualMachine {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(
             f,
-            "VirtM {{ registers: {:?}, stack: {:?}, heap[..0x400..]: {:?} }}",
+            "VirtualMachine {{ registers: {:?}, stack: {:?}, heap[..0x400..]: {:?} }}",
             self.registers,
             &self.flatmap[self.stack_bounds.0..self.stack_bounds.1],
             &self.flatmap[self.heap_bounds.0..0x400]

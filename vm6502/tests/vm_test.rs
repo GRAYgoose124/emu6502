@@ -4,7 +4,7 @@ use vm6502::prelude::*;
 
 #[test]
 fn test_vm_stack() {
-    let mut vm = VirtM::new();
+    let mut vm = VirtualMachine::new();
 
     let test_vec: arrayvec::ArrayVec<u8, 0x0FF> =
         (0..0x0FF).map(|_| rand::random::<u8>()).collect();
@@ -30,7 +30,7 @@ fn test_vm_stack() {
 
 #[test]
 fn test_vm_write_stack() {
-    let mut vm = VirtM::new();
+    let mut vm = VirtualMachine::new();
 
     let test_vec: arrayvec::ArrayVec<u8, 0x0FF> =
         (0..0x0FF).map(|_| rand::random::<u8>()).collect();
@@ -56,7 +56,7 @@ fn test_vm_write_stack() {
 
 #[test]
 fn test_vm_stack_contig() {
-    let mut vm = VirtM::new();
+    let mut vm = VirtualMachine::new();
 
     let test_vec: arrayvec::ArrayVec<u8, 0x0FF> =
         (0..0x0FF).map(|_| rand::random::<u8>()).collect();
@@ -79,7 +79,7 @@ fn test_vm_stack_contig() {
 
 #[test]
 fn test_vm_registers() {
-    let mut vm = VirtM::new();
+    let mut vm = VirtualMachine::new();
     vm.registers.ac = 0x01;
     vm.registers.x = 0x02;
     vm.registers.y = 0x03;
@@ -97,7 +97,7 @@ fn test_vm_registers() {
 
 #[test]
 fn test_vm_status() {
-    let mut vm = VirtM::new();
+    let mut vm = VirtualMachine::new();
     vm.reset_status();
     assert_eq!(vm.registers.sr, 0x00);
 
@@ -110,7 +110,7 @@ fn test_vm_status() {
 
 #[test]
 fn test_vm_insert_program() {
-    let mut vm = VirtM::new();
+    let mut vm = VirtualMachine::new();
     let prog = "BADA55AB5214BADA55AB5214BADA55AB5214BADA55AB5214BADA55AB5214BADA55AB5214";
     let decoded = decode(prog).unwrap();
 

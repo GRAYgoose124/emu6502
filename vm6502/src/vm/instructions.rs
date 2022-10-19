@@ -1,7 +1,7 @@
 use crate::prelude::*;
 
 pub mod prelude {
-    pub use crate::instructions::Instructions;
+    pub use crate::vm::instructions::Instructions;
 }
 
 pub trait Instructions {
@@ -63,7 +63,7 @@ pub trait Instructions {
     fn tya(&mut self);
 }
 
-impl Instructions for VirtM {
+impl Instructions for VirtualMachine {
     fn adc(&mut self) {
         let value = self.fetch(); // Fetch is directed by the internal mode.
 
@@ -76,131 +76,131 @@ impl Instructions for VirtM {
     }
 
     fn and(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn asl(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn bcc(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn bcs(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn beq(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn bit(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn bmi(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn bne(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn bpl(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn brk(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn bvc(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn bvs(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn clc(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn cld(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn cli(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn clv(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn cmp(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn cpx(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn cpy(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn dec(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn dex(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn dey(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn eor(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn inc(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn inx(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn iny(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn jmp(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn jsr(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn lda(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn ldx(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn ldy(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn lsr(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn nop(&mut self) {}
@@ -214,86 +214,86 @@ impl Instructions for VirtM {
     }
 
     fn pha(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn php(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn pla(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn plp(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn rol(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn ror(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn rti(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn rts(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn sbc(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn sec(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn sed(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn sei(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn sta(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn stx(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn sty(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn tax(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn tay(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn tsx(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn txa(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn txs(&mut self) {
-        todo!();
+        // todo!();
     }
 
     fn tya(&mut self) {
-        todo!();
+        // todo!();
     }
 }

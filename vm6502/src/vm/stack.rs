@@ -11,7 +11,7 @@ pub trait StackInterface {
     fn push(&mut self);
 }
 
-impl StackInterface for VirtM {
+impl StackInterface for VirtualMachine {
     fn pop(&mut self) {
         let value = self.flatmap[self.stack_bounds.1 - self.registers.sp as usize];
 
