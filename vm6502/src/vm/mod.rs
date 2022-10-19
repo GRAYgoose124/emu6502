@@ -1,11 +1,3 @@
-/// The virtual machine implementation
-///
-/// This module provides VirtualMachine, a 6502 cpu vm.
-/// It's API is intended to closely adhere to the 6502 specs.
-/// See [Masswerk's 6502 Instruction Set](https://www.masswerk.at/6502/6502_instruction_set.html) for more info on the spec.
-///
-///
-///
 use core::fmt::{Debug, Formatter, Result};
 
 use bytes::BytesMut;
@@ -20,7 +12,6 @@ mod stack;
 mod status;
 
 /// Uses everything necessary for the full 6502 vm to run.
-///
 pub mod prelude {
     // Expose virtual machine.
     pub use crate::program::prelude::*;
@@ -37,9 +28,13 @@ pub mod prelude {
     pub use crate::vm::status::prelude::*;
 }
 
-/// Virtual Machine struct
+/// The virtual machine implementation
 ///
+/// This module provides VirtualMachine, a 6502 cpu vm.
+/// It's API is intended to closely adhere to the 6502 specs.
 ///
+/// See [Masswerk's 6502 Instruction Set](https://www.masswerk.at/6502/6502_instruction_set.html) for more info on the spec.
+// TODO vstack and vheap so that you don't have to index yourself.
 #[derive(Derivative)]
 #[derivative(Default)]
 pub struct VirtualMachine {
@@ -69,6 +64,9 @@ pub struct VirtualMachine {
     /// Current mode state, this is generally set internally by `run_op`.
     #[derivative(Default(value = "Mode::Absolute"))]
     pub addr_mode: Mode,
+
+    #[derivative(Default(value = "0"))]
+    cycles: u64,
 }
 
 impl VirtualMachine {
@@ -81,8 +79,9 @@ impl Debug for VirtualMachine {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(
             f,
-            "VirtualMachine {{ registers: {:?}, stack: {:?}, heap[..0xFF]: {:?} }}",
+            "VirtualMachine {{\n\tregisters: {:?}\n\tzero page:\n\t\t{}\n\tstack:\n\t\t{}\n\theap[..0xFF]:\n\t\t{}\n}}",
             self.registers,
+            hex::encode(&self.flatmap[..0x0FF]).to_uppercase(),
             hex::encode(&self.flatmap[self.stack_bounds.0..self.stack_bounds.1]).to_uppercase(),
             hex::encode(&self.flatmap[self.heap_bounds.0..self.heap_bounds.0 + 0xFF])
                 .to_uppercase()

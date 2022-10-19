@@ -4,9 +4,12 @@
 //!
 //! It is designed to be used as a library, with no frontend.
 //!
-//! The virtual machine is implemented as a struct, `VirtM`, which contains
+//! The virtual machine is implemented as a struct, `VirtualMachine`, which contains
 //! all the state of the machine. The state is stored in a flat array, which is
 //! indexed by the `Registers` struct.
+//!
+//! The `VirtualMachine` has a flap memory map which the stack and heap index into.
+//! See more:
 //!
 //#![deny(missing_docs)]
 

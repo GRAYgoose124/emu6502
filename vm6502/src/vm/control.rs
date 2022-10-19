@@ -2,12 +2,15 @@ use bitmatch::bitmatch;
 use std::fmt::{Debug, Formatter, Result};
 
 use crate::prelude::*;
+//use crate::{pc_from_mode, cycles_from_mode};
 
 pub mod prelude {
     pub use crate::vm::control::InstructionController;
     pub use crate::vm::control::Mode;
 }
 
+/// Virtual machine addressing mode enum.
+///
 #[derive(PartialEq)]
 pub enum Mode {
     Accumulator,
@@ -46,13 +49,65 @@ impl Debug for Mode {
 }
 
 pub trait InstructionController {
-    fn run_op(&mut self, op: u8);
+    fn tick(&mut self) -> u64;
+    // TODO: Abstract matches out of tick so that you can get the ops then tick with opcode.
+    // fn opcode(&mut self, op: &str);
+    // fn opcode(&mut self, op: u8);
 
+    // TODO: Mode could be a macro, or other macros could be integrated. Consider this API decision more closely.
     fn mode(&mut self, op: u8) -> Mode;
     fn fetch(&mut self) -> u8;
 }
 
+/// Virtual machine core control functionality.
+///
+/// This provides three main internal functions, `tick`, `mode`, and `fetch`.
+///
+/// # Examples
+/// ## `tick`
+/// ```
+/// use vm6502::prelude::*;
+/// let mut vm = VirtualMachine::new();
+///
+/// vm.insert_program(0x00, "69FFFF");
+/// vm.registers.pc = 0x00;
+///
+/// vm.tick();
+///
+/// assert_eq!(vm.addr_mode, Mode::Immediate);
+/// assert_eq!(vm.flatmap[vm.registers.pc as usize + vm.heap_bounds.0], 0xFF);
+/// ```
+/// ## `mode`
+/// ```
+/// use vm6502::prelude::*;
+///
+/// let mut vm = VirtualMachine::new();
+/// let mode = vm.mode(0x69);
+///
+/// assert_eq!(mode, Mode::Immediate);
+/// ```
+/// ## `fetch`
+/// ```
+/// use vm6502::prelude::*;
+///
+/// let mut vm = VirtualMachine::new();
+/// let byte = 0xFF;
+///
+/// // 0x200 is heap start. See `VirtualMachine::heap_bounds`.
+/// vm.flatmap[0x0200] = 0x69;
+/// vm.flatmap[0x0201] = byte;
+///
+/// // Set the program counter to 0x0200.
+/// vm.registers.pc = 0x0200;
+///
+/// // Set the mode to immediate. (internal access only)
+/// vm.addr_mode = Mode::Immediate;
+///
+/// let fetched = vm.fetch();
+/// assert_eq!(fetched, byte);
+/// ```
 impl InstructionController for VirtualMachine {
+    /// Fetch the next byte from memory using the current address mode and program counter.
     fn fetch(&mut self) -> u8 {
         match self.addr_mode {
             // OPC A
@@ -134,6 +189,7 @@ impl InstructionController for VirtualMachine {
         }
     }
 
+    /// Check the opcode and return the addressing mode.
     #[bitmatch]
     fn mode(&mut self, op: u8) -> Mode {
         #[bitmatch]
@@ -220,9 +276,18 @@ impl InstructionController for VirtualMachine {
         }
     }
 
+    /// Execute the an arbitrary op. It returns the vm's current `cycle` count.
     #[bitmatch]
-    fn run_op(&mut self, op: u8) {
-        self.addr_mode = self.mode(op);
+    fn tick(&mut self) -> u64 {
+        // Get current op
+        let op = self.flatmap[self.registers.pc as usize + self.heap_bounds.0];
+
+        // Set internal mode.
+        let m = self.mode(op);
+
+        // Update internal state
+        self.addr_mode = m;
+        self.registers.pc += 1;
 
         #[bitmatch]
         match op {
@@ -305,5 +370,8 @@ impl InstructionController for VirtualMachine {
             "11101010" => self.nop(),
             _ => self.nop(),
         };
+
+        // TODO: This should be updated (along with the PC) by the above commands.
+        self.cycles
     }
 }

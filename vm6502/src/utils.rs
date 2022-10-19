@@ -64,7 +64,11 @@ mod status_macros {
 pub mod machine_arrays {
     pub mod prelude {
         pub use crate::utils::machine_arrays::{
-            valid_op, COMPLETE_OPCODE_TABLE, N_VALID_OPS, OP_MODES, VALID_OPCODES,
+            valid_op,
+            COMPLETE_OPCODE_TABLE,
+            N_VALID_OPS,
+            OP_MODES, //VALID_CYCLE_COUNTS,
+            VALID_OPCODES,
         };
     }
 
@@ -85,6 +89,11 @@ pub mod machine_arrays {
         0xE5, 0xE6, 0xE8, 0xE9, 0xEA, 0xEC, 0xED, 0xEE, 0xF0, 0xF1, 0xF5, 0xF6, 0xF8, 0xF9, 0xFD,
         0xFE,
     ];
+
+    //The total number of cycles VALID_OPCODES[\n] should spend.
+    //
+    // This is mostly for debuggin purposes and is to be deprecated for internal use.
+    //pub static VALID_CYCLE_COUNTS: [u8; N_VALID_OPS] = [];
 
     /// All opcodes and their names, as tuples in order.
     ///
@@ -371,6 +380,7 @@ pub mod machine_arrays {
 
     use crate::prelude::Mode;
     use crate::prelude::Mode::*;
+    /// The expected modes for the VALID_OPCODES.
     pub static OP_MODES: [Mode; N_VALID_OPS] = [
         Implied,
         IndirectX,

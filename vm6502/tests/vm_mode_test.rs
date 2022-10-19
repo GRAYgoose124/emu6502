@@ -13,13 +13,5 @@ fn test_mode() {
     }
 }
 
-#[test]
-fn test_run_op() {
-    let mut vm = VirtualMachine::new();
-
-    for (i, op) in VALID_OPCODES.iter().enumerate() {
-        vm.run_op(*op);
-
-        assert_eq!(vm.addr_mode, OP_MODES[i]);
-    }
-}
+// TODO:
+//fn test_tick() {}
