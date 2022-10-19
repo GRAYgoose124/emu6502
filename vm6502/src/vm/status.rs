@@ -15,6 +15,10 @@ pub trait StatusInterface {
     fn reset_status(&mut self);
 }
 
+/// Implements a high level interface for accessing the status register.
+///
+/// This is the intended API access for frontends to use the VM.
+///
 impl StatusInterface for VirtualMachine {
     fn flip_status(&mut self, flag: Status) {
         let status = self.registers.sr;
@@ -54,6 +58,7 @@ pub enum Status {
     Carry,
 }
 
+// TODO: set values to equal binary flags for easier usage.
 impl From<u8> for Status {
     fn from(value: u8) -> Self {
         match value {

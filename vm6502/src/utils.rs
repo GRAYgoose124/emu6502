@@ -1,11 +1,10 @@
 pub mod prelude {
-    pub use crate::stuff_program_at_end;
     pub use crate::utils::machine_arrays::prelude::*;
 
     pub use crate::utils::macros::*;
 }
 
-pub mod macros {
+mod macros {
     pub use crate::utils::machine_data_macros::*;
     pub use crate::utils::status_macros::*;
 }
@@ -23,6 +22,8 @@ mod vm_macros {
 
 #[macro_use]
 mod status_macros {
+    /// Convert Status to binary flag.
+    ///  
     #[macro_export]
     macro_rules! status {
         ($flag: expr) => {
@@ -39,6 +40,15 @@ mod status_macros {
         };
     }
 
+    /// Make an arbitrary state from flags.
+    ///
+    /// # Example
+    /// ```
+    /// use vm6502::prelude::*;
+    /// use vm6502::{make_status, status};
+    ///
+    /// assert_eq!(make_status!( Status::Negative, Status::Overflow ), 0b11000000)
+    /// ```
     #[macro_export]
     macro_rules! make_status {
         () => {
@@ -51,7 +61,6 @@ mod status_macros {
 }
 
 /// This module contains statics, functions, and macros for creating the machine data.
-///
 pub mod machine_arrays {
     pub mod prelude {
         pub use crate::utils::machine_arrays::{
@@ -81,10 +90,10 @@ pub mod machine_arrays {
     ///
     /// For example, 0x00 is "BRK", 0x01 is "ORA (indirect, X)".
     ///
-    /// Ex. ("BRK", 0x00)
+    /// Ex. `COMPLETE_OPCODE_TABLE[0] == ("BRK", 0x00)`
     ///
-    /// Use valid_op to filter out invalid ops.
-    /// # Example:
+    /// # Use valid_op to filter out invalid ops.
+    /// ## Example:
     /// ```
     /// use vm6502::prelude::*;
     ///

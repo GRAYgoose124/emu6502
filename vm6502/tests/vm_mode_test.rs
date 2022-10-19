@@ -1,25 +1,6 @@
 use vm6502::prelude::*;
 
-#[test]
-fn test_cc0_mode() {
-    let mut vm = VirtualMachine::new();
-    let mode = vm.cc0_mode(0x00, 0x00);
-    assert_eq!(mode, Mode::Implied);
-}
-
-#[test]
-fn test_cc1_mode() {
-    let mut vm = VirtualMachine::new();
-    let addr_mode = vm.cc1_mode(0x00, 0x00);
-    assert_eq!(addr_mode, Mode::IndirectX);
-}
-
-#[test]
-fn test_cc2_mode() {
-    let mut vm = VirtualMachine::new();
-    let addr_mode = vm.cc2_mode(0x00, 0x00);
-    assert_eq!(addr_mode, Mode::Implied);
-}
+/// TODO: MORE TESTCASES!
 
 #[test]
 fn test_mode() {
