@@ -1,3 +1,5 @@
+#![feature(array_zip)]
+
 use arrayvec::ArrayVec;
 
 use vm6502::prelude::*;
@@ -30,4 +32,6 @@ fn main() {
     vm.insert_program(vm.vheap_bounds.1 - (prog.len() / 2), prog);
 
     println!("{:?}", vm);
+
+    // Print Ops and Names
 }

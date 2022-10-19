@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use crate::status;
 
 pub mod prelude {
     pub use crate::vm::status::Status;

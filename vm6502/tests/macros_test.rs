@@ -2,6 +2,7 @@ use vm6502::prelude::*;
 
 #[test]
 fn test_status_macros() {
+    use vm6502::status;
     use Status::*;
 
     assert_eq!(status!(Negative), 0b10000000);
@@ -16,6 +17,7 @@ fn test_status_macros() {
 
 #[test]
 fn test_make_status() {
+    use vm6502::*;
     use Status::*;
 
     let mut status = make_status!(Negative, Overflow, Break, Decimal, Interrupt, Zero, Carry);

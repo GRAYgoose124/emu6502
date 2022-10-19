@@ -1,12 +1,12 @@
 //! 6502 virtual machine implementation.
 //!
-//! This crate provides a virtual machine for the 6502 CPU. It is designed to be
-//! used as a library, with no frontend. The virtual machine is implemented as a
-//! struct, `VirtM`, which contains all the state of the machine. The state is
-//! stored in a flat array, which is indexed by the `Registers` struct. The
-//! virtual machine is also implemented as a trait, `VMControl`, which provides
-//! methods for manipulating the state of the machine.
+//! This crate provides a virtual machine for the 6502 CPU.
 //!
+//! It is designed to be used as a library, with no frontend.
+//!
+//! The virtual machine is implemented as a struct, `VirtM`, which contains
+//! all the state of the machine. The state is stored in a flat array, which is
+//! indexed by the `Registers` struct.
 //!
 //#![deny(missing_docs)]
 

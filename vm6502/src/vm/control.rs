@@ -165,7 +165,7 @@ impl InstructionController for VirtualMachine {
             "01000000" => self.rti(),
             "01100000" => self.rts(),
             // cc = 01
-            "aaabbb01" => {
+            "aaa___01" => {
                 // We could fetch with self.mode but we avoid the extraneous match.
                 match a {
                     0x00 => self.ora(),
@@ -180,7 +180,7 @@ impl InstructionController for VirtualMachine {
                 }
             }
             // cc = 10
-            "aaabbb10" => match a {
+            "aaa___10" => match a {
                 0x00 => self.asl(),
                 0x01 => self.rol(),
                 0x02 => self.lsr(),
@@ -192,7 +192,7 @@ impl InstructionController for VirtualMachine {
                 _ => self.nop(),
             },
             // cc = 00
-            "aaabbb00" => match a {
+            "aaa___00" => match a {
                 0x00 => self.bit(),
                 0x01 => self.jsr(),
                 0x02 => self.jmp(),
@@ -203,20 +203,17 @@ impl InstructionController for VirtualMachine {
                 _ => self.nop(),
             },
             // conditional jumps = aab10000
-            "aab10000" => {
-                let bb = b + 1;
-                match "aab" {
-                    "000" => self.bpl(),
-                    "001" => self.bmi(),
-                    "010" => self.bvc(),
-                    "011" => self.bvs(),
-                    "100" => self.bcc(),
-                    "101" => self.bcs(),
-                    "110" => self.bne(),
-                    "111" => self.beq(),
-                    _ => self.nop(),
-                }
-            }
+            "___10000" => match "__" {
+                "000" => self.bpl(),
+                "001" => self.bmi(),
+                "010" => self.bvc(),
+                "011" => self.bvs(),
+                "100" => self.bcc(),
+                "101" => self.bcs(),
+                "110" => self.bne(),
+                "111" => self.beq(),
+                _ => self.nop(),
+            },
 
             // no pattern
             "00001000" => self.php(),

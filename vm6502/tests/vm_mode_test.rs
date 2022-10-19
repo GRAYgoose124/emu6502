@@ -25,9 +25,8 @@ fn test_cc2_mode() {
 fn test_mode() {
     let mut vm = VirtualMachine::new();
 
-    for i in 0..N_OPS {
-        let mode = vm.mode(OPCODES[i]);
-        eprintln!("{}, 0x{:02X}: {:?}, {:?}", i, OPCODES[i], mode, OP_MODES[i]);
+    for (i, op) in VALID_OPCODES.iter().enumerate() {
+        let mode = vm.mode(*op);
 
         assert_eq!(mode, OP_MODES[i]);
     }
@@ -37,13 +36,8 @@ fn test_mode() {
 fn test_run_op() {
     let mut vm = VirtualMachine::new();
 
-    for i in 0..N_OPS {
-        vm.run_op(OPCODES[i]);
-
-        eprintln!(
-            "{}, 0x{:02X}: {:?}, {:?}",
-            i, OPCODES[i], vm.addr_mode, OP_MODES[i]
-        );
+    for (i, op) in VALID_OPCODES.iter().enumerate() {
+        vm.run_op(*op);
 
         assert_eq!(vm.addr_mode, OP_MODES[i]);
     }
