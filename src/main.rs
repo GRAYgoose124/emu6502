@@ -9,7 +9,7 @@ fn main() {
     let prog = "69F00FBEEFDEADB00BBADA55";
 
     // vm.insert_program(vm.vheap_bounds.1 - (prog.len() / 2), prog);
-    vm.insert_program(0x200, prog);
+    vm.insert_program(vm.vheap_bounds.0, prog);
 
     // let op = vm.g
     // vm.run_op()

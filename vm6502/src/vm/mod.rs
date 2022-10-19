@@ -68,8 +68,8 @@ impl Debug for VirtualMachine {
             f,
             "VirtualMachine {{ registers: {:?}, stack: {:?}, heap[..0x400..]: {:?} }}",
             self.registers,
-            &self.flatmap[self.stack_bounds.0..self.stack_bounds.1],
-            &self.flatmap[self.heap_bounds.0..0x400]
+            hex::encode(&self.flatmap[self.stack_bounds.0..self.stack_bounds.1]).to_uppercase(),
+            hex::encode(&self.flatmap[self.heap_bounds.0..self.heap_bounds.0 + 0xFF]).to_uppercase()
         )
     }
 }
