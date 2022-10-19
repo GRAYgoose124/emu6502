@@ -2,6 +2,12 @@
 ///
 ///    Note: The status register (SR) is also known as the P register.
 
+pub mod prelude {
+    pub use crate::vm::registers::Registers;
+}
+
+///
+///
 ///
 #[derive(Debug, Clone, Copy)]
 pub struct Registers {
