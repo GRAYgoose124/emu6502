@@ -23,7 +23,6 @@ pub struct Registers {
     /// Stack register
     pub sr: u8,
     /// Flag register
-    ///
     /// - `SR`  Flags (bit 7 to bit 0)
     /// - `N`	Negative
     /// - `V`	Overflow

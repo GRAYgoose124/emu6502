@@ -109,6 +109,7 @@ impl InstructionController for VirtualMachine {
         #[cfg(feature = "show_mode")]
         println!("\n\tfetch mode: {:?}", self.addr_mode);
 
+        // TODO: Implement all PC incrementing.
         let fetched = match self.addr_mode {
             // OPC A
             Mode::Accumulator => self.registers.ac,

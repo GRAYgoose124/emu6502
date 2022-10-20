@@ -61,7 +61,7 @@ pub struct VirtualMachine {
     #[derivative(Default(value = "(0x0000, 0xFDFF)"))]
     pub vheap_bounds: (usize, usize),
 
-    /// Current mode state, this is generally set internally by `run_op`.
+    /// Current mode state, this is generally set internally by [tick](InstructionController::tick).
     #[derivative(Default(value = "Mode::Absolute"))]
     pub addr_mode: Mode,
 

@@ -1,4 +1,6 @@
 use crate::prelude::*;
+#[cfg(feature = "show_status")]
+use crate::status;
 
 pub mod prelude {
     pub use crate::vm::instructions::Instructions;

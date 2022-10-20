@@ -101,10 +101,12 @@ fn test_vm_status() {
     vm.reset_status();
     assert_eq!(vm.registers.sr, 0x00);
 
-    for i in 0..0x08 {
-        vm.set_status(Status::from(i), true);
-        vm.flip_status(Status::from(i));
-        assert_eq!(vm.get_status(Status::from(i)), false);
+    for i in 0..0x07 {
+        let sv = 1 << i;
+
+        vm.set_status(Status::from(sv), true);
+        vm.flip_status(Status::from(sv));
+        assert_eq!(vm.get_status(Status::from(sv)), false);
     }
 }
 

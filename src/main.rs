@@ -6,7 +6,7 @@ use vm6502::prelude::*;
 fn main() {
     let mut vm = VirtualMachine::new();
 
-    let prog = "69F00A";
+    let prog = "69F00A2900";
 
     // vm.insert_program(vm.vheap_bounds.1 - (prog.len() / 2), prog);
     vm.insert_program(vm.vheap_bounds.0, prog);
@@ -20,5 +20,7 @@ fn main() {
     vm.tick();
     debug_assert_eq!(vm.registers.ac, 0xFE);
 
+    vm.tick();
+    debug_assert_eq!(vm.registers.ac, 0x00);
     println!("{:?}", vm);
 }

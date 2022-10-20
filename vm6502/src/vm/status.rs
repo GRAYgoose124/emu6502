@@ -55,6 +55,7 @@ impl StatusInterface for VirtualMachine {
     }
 }
 
+#[derive(PartialEq)]
 pub enum Status {
     Negative,
     Overflow,
@@ -70,14 +71,14 @@ pub enum Status {
 impl From<u8> for Status {
     fn from(value: u8) -> Self {
         match value {
-            0 => Status::Negative,
-            1 => Status::Overflow,
-            2 => Status::Unused,
-            3 => Status::Break,
+            64 => Status::Negative,
+            32 => Status::Overflow,
+            16 => Status::Unused,
+            8 => Status::Break,
             4 => Status::Decimal,
-            5 => Status::Interrupt,
-            6 => Status::Zero,
-            7 => Status::Carry,
+            2 => Status::Interrupt,
+            1 => Status::Zero,
+            0 => Status::Carry,
             _ => unreachable!(),
         }
     }
@@ -89,11 +90,11 @@ impl Into<u8> for Status {
             Status::Negative => 0,
             Status::Overflow => 1,
             Status::Unused => 2,
-            Status::Break => 3,
-            Status::Decimal => 4,
-            Status::Interrupt => 5,
-            Status::Zero => 6,
-            Status::Carry => 7,
+            Status::Break => 4,
+            Status::Decimal => 8,
+            Status::Interrupt => 16,
+            Status::Zero => 32,
+            Status::Carry => 64,
         }
     }
 }
