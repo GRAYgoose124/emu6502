@@ -72,7 +72,7 @@ impl Instructions for VirtualMachine {
 
         #[cfg(feature = "show_vm_instr")]
         println!(
-            "\t\tADC: {} + {} = {}, Carry: {}",
+            "\t\tADC: {:02X} + {:02X} = {:02X}, Carry: {:02X}",
             self.registers.ac,
             value,
             carried,
@@ -84,11 +84,32 @@ impl Instructions for VirtualMachine {
     }
 
     fn and(&mut self) {
-        // todo!();
+        let value = self.fetch();
+
+        self.registers.ac &= value;
+
+        #[cfg(feature = "show_vm_instr")]
+        println!(
+            "\t\tAND: {} & {} = {}",
+            self.registers.ac, value, self.registers.ac
+        );
+
+        self.set_status(Status::Zero, self.registers.ac == 0);
     }
 
     fn asl(&mut self) {
-        // todo!();
+        let value = self.fetch();
+
+        let result = value << 1;
+        let carry = result & 0x80 != 0;
+
+        #[cfg(feature = "show_vm_instr")]
+        println!("\t\tASL: {} << 1 = {}, carry: {}", value, result, carry);
+
+        self.set_status(Status::Carry, carry);
+        self.set_status(Status::Zero, result == 0);
+
+        self.registers.ac = result;
     }
 
     fn bcc(&mut self) {

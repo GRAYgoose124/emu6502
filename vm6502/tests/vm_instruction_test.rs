@@ -14,3 +14,13 @@ fn test_vminstr_adc() {
     assert_eq!(vm.addr_mode, Mode::Immediate);
     // assert_eq!(vm.registers.ac, 0x00);
 }
+
+#[test]
+fn test_vm_instr_asl() {
+    let mut vm = VirtualMachine::new();
+    let prog = "0A";
+    vm.registers.ac = 0xFF;
+
+    vm.insert_program(vm.vheap_bounds.0, prog);
+    vm.tick();
+}

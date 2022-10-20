@@ -1,3 +1,5 @@
+use std::fmt::{Debug, Formatter, Result};
+
 use crate::prelude::*;
 use crate::status;
 
@@ -27,6 +29,9 @@ impl StatusInterface for VirtualMachine {
     }
 
     fn set_status(&mut self, flag: Status, value: bool) {
+        #[cfg(feature = "show_status_set")]
+        println!("\t\t\tsetting status: {:?} to {}", flag, value);
+
         let status = self.registers.sr;
 
         if value {
@@ -34,6 +39,9 @@ impl StatusInterface for VirtualMachine {
         } else {
             self.registers.sr = status & !status!(flag);
         }
+
+        #[cfg(feature = "show_status")]
+        println!("\t\t\tNV-BDIZC\n\t\t\t{:08b}", self.registers.sr);
     }
 
     fn get_status(&self, flag: Status) -> bool {
@@ -86,6 +94,21 @@ impl Into<u8> for Status {
             Status::Interrupt => 5,
             Status::Zero => 6,
             Status::Carry => 7,
+        }
+    }
+}
+
+impl Debug for Status {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        match self {
+            Status::Negative => write!(f, "Negative"),
+            Status::Overflow => write!(f, "Overflow"),
+            Status::Unused => write!(f, "Unused"),
+            Status::Break => write!(f, "Break"),
+            Status::Decimal => write!(f, "Decimal"),
+            Status::Interrupt => write!(f, "Interrupt"),
+            Status::Zero => write!(f, "Zero"),
+            Status::Carry => write!(f, "Carry"),
         }
     }
 }

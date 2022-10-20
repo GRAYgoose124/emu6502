@@ -305,21 +305,18 @@ impl InstructionController for VirtualMachine {
         #[bitmatch]
         match op {
             "00000000" => {
-                #[cfg(feature = "show_vm_instr")]
+                #[cfg(feature = "show_vm_instr_tick_match")]
                 println!("BRK");
-
                 self.brk()
             }
             "01000000" => {
-                #[cfg(feature = "show_vm_instr")]
+                #[cfg(feature = "show_vm_instr_tick_match")]
                 println!("RTI");
-
                 self.rti()
             }
             "01100000" => {
-                #[cfg(feature = "show_vm_instr")]
+                #[cfg(feature = "show_vm_instr_tick_match")]
                 println!("RTS");
-
                 self.rts()
             }
             "aaabbb01" => {
@@ -328,42 +325,42 @@ impl InstructionController for VirtualMachine {
 
                 match a {
                     0x00 => {
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tORA");
                         self.ora()
                     }
                     0x01 => {
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tAND");
                         self.and()
                     }
                     0x02 => {
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tEOR");
                         self.eor()
                     }
                     0x03 => {
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tADC");
                         self.adc()
                     }
                     0x04 => {
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tSTA");
                         self.sta()
                     }
                     0x05 => {
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tLDA");
                         self.lda()
                     }
                     0x06 => {
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tCMP");
                         self.cmp()
                     }
                     0x07 => {
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tSBC");
                         self.sbc();
                     }
@@ -376,42 +373,42 @@ impl InstructionController for VirtualMachine {
 
                 match a {
                     0x00 => {
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tASL");
                         self.asl()
                     }
                     0x01 => {
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tROL");
                         self.rol()
                     }
                     0x02 => {
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tLSR");
                         self.lsr()
                     }
                     0x03 => {
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tROR");
                         self.ror()
                     }
                     0x04 => {
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tSTX");
                         self.stx()
                     }
                     0x05 => {
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tLDX");
                         self.ldx()
                     }
                     0x06 => {
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tDEC");
                         self.dec()
                     }
                     0x07 => {
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tINC");
                         self.inc()
                     }
@@ -424,37 +421,37 @@ impl InstructionController for VirtualMachine {
 
                 match a {
                     0x00 => {
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tBIT");
                         self.bit()
                     }
                     0x01 => {
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tJSR");
                         self.jsr()
                     }
                     0x02 => {
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tJMP");
                         self.jmp()
                     }
                     0x03 => {
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tSTY");
                         self.sty()
                     }
                     0x04 => {
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tLDY");
                         self.ldy()
                     }
                     0x05 => {
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tCPY");
                         self.cpy()
                     }
                     0x06 => {
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tCPX");
                         self.cpx()
                     }
@@ -469,42 +466,42 @@ impl InstructionController for VirtualMachine {
                 match x {
                     0x00 => {
                         self.bpl();
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tBPL");
                     }
                     0x01 => {
                         self.bmi();
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tBMI");
                     }
                     0x02 => {
                         self.bvc();
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tBVC");
                     }
                     0x03 => {
                         self.bvs();
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tBVS");
                     }
                     0x04 => {
                         self.bcc();
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tBCC");
                     }
                     0x05 => {
                         self.bcs();
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tBCS");
                     }
                     0x06 => {
                         self.bne();
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tBNE");
                     }
                     0x07 => {
                         self.beq();
-                        #[cfg(feature = "show_vm_instr")]
+                        #[cfg(feature = "show_vm_instr_tick_match")]
                         println!("\t\tBEQ");
                     }
                     _ => self.nop(),
@@ -512,112 +509,112 @@ impl InstructionController for VirtualMachine {
             }
             "00001000" => {
                 self.php();
-                #[cfg(feature = "show_vm_instr")]
+                #[cfg(feature = "show_vm_instr_tick_match")]
                 println!("\t\tPHP");
             }
             "00101000" => {
                 self.plp();
-                #[cfg(feature = "show_vm_instr")]
+                #[cfg(feature = "show_vm_instr_tick_match")]
                 println!("\t\tPLP");
             }
             "01001000" => {
                 self.pha();
-                #[cfg(feature = "show_vm_instr")]
+                #[cfg(feature = "show_vm_instr_tick_match")]
                 println!("\t\tPHA");
             }
             "01101000" => {
                 self.pla();
-                #[cfg(feature = "show_vm_instr")]
+                #[cfg(feature = "show_vm_instr_tick_match")]
                 println!("\t\tPLA");
             }
             "10001000" => {
                 self.dey();
-                #[cfg(feature = "show_vm_instr")]
+                #[cfg(feature = "show_vm_instr_tick_match")]
                 println!("\t\tDEY");
             }
             "10101000" => {
                 self.tay();
-                #[cfg(feature = "show_vm_instr")]
+                #[cfg(feature = "show_vm_instr_tick_match")]
                 println!("\t\tTAY");
             }
             "01001100" => {
                 self.iny();
-                #[cfg(feature = "show_vm_instr")]
+                #[cfg(feature = "show_vm_instr_tick_match")]
                 println!("\t\tINY");
             }
             "11101000" => {
                 self.inx();
-                #[cfg(feature = "show_vm_instr")]
+                #[cfg(feature = "show_vm_instr_tick_match")]
                 println!("\t\tINX");
             }
             "00011000" => {
                 self.clc();
-                #[cfg(feature = "show_vm_instr")]
+                #[cfg(feature = "show_vm_instr_tick_match")]
                 println!("\t\tCLC");
             }
             "00111000" => {
                 self.sec();
-                #[cfg(feature = "show_vm_instr")]
+                #[cfg(feature = "show_vm_instr_tick_match")]
                 println!("\t\tSEC");
             }
             "01011000" => {
                 self.cli();
-                #[cfg(feature = "show_vm_instr")]
+                #[cfg(feature = "show_vm_instr_tick_match")]
                 println!("\t\tCLI");
             }
             "01111000" => {
                 self.sei();
-                #[cfg(feature = "show_vm_instr")]
+                #[cfg(feature = "show_vm_instr_tick_match")]
                 println!("\t\tSEI");
             }
             "10011000" => {
                 self.tya();
-                #[cfg(feature = "show_vm_instr")]
+                #[cfg(feature = "show_vm_instr_tick_match")]
                 println!("\t\tTYA");
             }
             "10111000" => {
                 self.clv();
-                #[cfg(feature = "show_vm_instr")]
+                #[cfg(feature = "show_vm_instr_tick_match")]
                 println!("\t\tCLV");
             }
             "11011000" => {
                 self.cld();
-                #[cfg(feature = "show_vm_instr")]
+                #[cfg(feature = "show_vm_instr_tick_match")]
                 println!("\t\tCLD");
             }
             "11111000" => {
                 self.sed();
-                #[cfg(feature = "show_vm_instr")]
+                #[cfg(feature = "show_vm_instr_tick_match")]
                 println!("\t\tSED");
             }
             "10001010" => {
                 self.txa();
-                #[cfg(feature = "show_vm_instr")]
+                #[cfg(feature = "show_vm_instr_tick_match")]
                 println!("\t\tTXA");
             }
             "10011010" => {
                 self.txs();
-                #[cfg(feature = "show_vm_instr")]
+                #[cfg(feature = "show_vm_instr_tick_match")]
                 println!("\t\tTXS");
             }
             "10101010" => {
                 self.tax();
-                #[cfg(feature = "show_vm_instr")]
+                #[cfg(feature = "show_vm_instr_tick_match")]
                 println!("\t\tTAX");
             }
             "10111010" => {
                 self.tsx();
-                #[cfg(feature = "show_vm_instr")]
+                #[cfg(feature = "show_vm_instr_tick_match")]
                 println!("\t\tTSX");
             }
             "11001010" => {
                 self.dex();
-                #[cfg(feature = "show_vm_instr")]
+                #[cfg(feature = "show_vm_instr_tick_match")]
                 println!("\t\tDEX");
             }
             _ => {
                 self.nop();
-                #[cfg(feature = "show_vm_instr")]
+                #[cfg(feature = "show_vm_instr_tick_match")]
                 println!("\t\tNOP");
             }
         };
