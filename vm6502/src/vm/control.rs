@@ -119,60 +119,64 @@ impl InstructionController for VirtualMachine {
             // OPC $LLHH
             // operand is address $HHLL
             Mode::Absolute => {
+                // Todo can we move increments to get heap? We have to fix Relative to be
+                // parallel. I don't think so, because indirect fetching.
                 self.registers.pc += 1;
-                let ll = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
+                let ll = self.get_heap(0);
                 self.registers.pc += 1;
-                let hh = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
-                self.flatmap[self.heap_bounds.0 + ((hh as usize) << 8 | ll as usize)]
+                let hh = self.get_heap(0);
+
+                let offset = (hh as usize) << 8 | ll as usize;
+                self.get_heap(offset)
             }
             // OPC $LLHH,X
             Mode::AbsoluteX => {
                 self.registers.pc += 1;
-                let ll = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
+                let ll = self.get_heap(0);
                 self.registers.pc += 1;
-                let hh = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
-                self.flatmap[self.heap_bounds.0
-                    + ((hh as usize) << 8 | ll as usize + self.registers.x as usize)]
+                let hh = self.get_heap(0);
+
+                let offset = (hh as usize) << 8 | ll as usize + self.registers.x as usize;
+                self.get_heap(offset)
             }
             // OPC $LLHH,Y
             Mode::AbsoluteY => {
                 self.registers.pc += 1;
-                let ll = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
+                let ll = self.get_heap(0);
                 self.registers.pc += 1;
-                let hh = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
-                self.flatmap[self.heap_bounds.0
-                    + ((hh as usize) << 8 | ll as usize + self.registers.y as usize)]
+                let hh = self.get_heap(0);
+
+                let offset = (hh as usize) << 8 | ll as usize + self.registers.y as usize;
+                self.get_heap(offset)
             }
             // OPC #$BB
             Mode::Immediate => {
                 self.registers.pc += 1;
-                self.flatmap[self.heap_bounds.0 + self.registers.pc as usize]
+                self.get_heap(0)
             }
             // OPC
             Mode::Implied => 0,
             // OPC ($LLHH)
             Mode::Indirect => {
                 self.registers.pc += 1;
-                let ll = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
+                let ll = self.get_heap(0);
                 self.registers.pc += 1;
-                let hh = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
-                let addr = (hh as usize) << 8 | ll as usize;
-                self.flatmap[self.heap_bounds.0 + addr]
+                let hh = self.get_heap(0);
+
+                let offset = (hh as usize) << 8 | ll as usize;
+                self.get_heap(offset)
             }
             // OPC ($LL, X)
             // operand is zeropage address; effective address is word in (LL + X, LL + X + 1),
             // inc. without carry: C.w($00LL + X)
             Mode::IndirectX => {
                 self.registers.pc += 1;
+                let ll = self.get_heap(0);
+                let ell = self.get_heap(ll as usize + self.registers.x as usize);
+                let ehh = self.get_heap(ll as usize + self.registers.x as usize + 1);
 
-                let ll = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
-                let ell =
-                    self.flatmap[self.heap_bounds.0 + ll as usize + self.registers.x as usize];
-                let ehh =
-                    self.flatmap[self.heap_bounds.0 + ll as usize + self.registers.x as usize + 1];
-                let addr = (ehh as usize) << 8 | ell as usize;
-
-                self.flatmap[self.heap_bounds.0 + addr]
+                let offset = (ehh as usize) << 8 | ell as usize;
+                self.get_heap(offset)
             }
             // OPC ($LL), Y
             // operand is zeropage address; effective address is word in (LL, LL + 1)
@@ -180,38 +184,36 @@ impl InstructionController for VirtualMachine {
             // TODO: check if this is correct.
             Mode::IndirectY => {
                 self.registers.pc += 1;
-                let ll = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
-                let ell = self.flatmap[self.heap_bounds.0 + ll as usize];
-                let ehh = self.flatmap[self.heap_bounds.0 + ll as usize + 1];
-                let addr = (ehh as usize) << 8 | ell as usize + self.registers.y as usize;
+                let ll = self.get_heap(0);
+                let ell = self.get_heap(ll as usize);
+                let ehh = self.get_heap(ll as usize);
 
-                self.flatmap[self.heap_bounds.0 + addr]
+                let offset = (ehh as usize) << 8 | ell as usize + self.registers.y as usize;
+                self.get_heap(offset)
             }
             // OPC $BB
             Mode::Relative => {
                 // TODO: Check if i should be setting this
                 //self.registers.pc += 1;
-                let bb = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize + 1];
-
-                bb
+                self.get_heap(1)
             }
             // OPC $LL
             Mode::ZeroPage => {
                 self.registers.pc += 1;
-                let ll = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
-                self.flatmap[self.heap_bounds.0 + ll as usize]
+                let ll = self.get_heap(0);
+                self.get_heap(ll as usize)
             }
             // OPC $LL, X
             Mode::ZeroPageX => {
                 self.registers.pc += 1;
-                let ll = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
-                self.flatmap[self.heap_bounds.0 + ll as usize + self.registers.x as usize]
+                let ll = self.get_heap(0);
+                self.get_heap(ll as usize + self.registers.x as usize)
             }
             // OPC $LL, Y
             Mode::ZeroPageY => {
                 self.registers.pc += 1;
-                let ll = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
-                self.flatmap[self.heap_bounds.0 + ll as usize + self.registers.y as usize]
+                let ll = self.get_heap(0);
+                self.get_heap(ll as usize + self.registers.y as usize)
             }
         };
 

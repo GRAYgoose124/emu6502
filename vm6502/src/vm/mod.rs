@@ -6,6 +6,7 @@ use derivative::Derivative;
 use crate::prelude::*;
 
 mod control;
+mod heap;
 mod instructions;
 mod registers;
 mod stack;
@@ -23,6 +24,7 @@ pub mod prelude {
     // Virtual machine instructions set.
     pub use crate::vm::instructions::prelude::*;
 
+    pub use crate::vm::heap::prelude::*;
     pub use crate::vm::registers::prelude::*;
     pub use crate::vm::stack::prelude::*;
     pub use crate::vm::status::prelude::*;
