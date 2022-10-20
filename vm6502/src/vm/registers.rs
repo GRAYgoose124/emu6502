@@ -1,6 +1,7 @@
 /// This module implements the 6502 registers.
 ///
 ///    Note: The status register (SR) is also known as the P register.
+use std::fmt::{Debug, Formatter, Result};
 
 pub mod prelude {
     pub use crate::vm::registers::Registers;
@@ -9,7 +10,7 @@ pub mod prelude {
 ///
 ///
 ///
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct Registers {
     /// Program counter
     pub pc: u16,
@@ -45,5 +46,15 @@ impl Registers {
             sr: 0x00,
             sp: 0x00,
         }
+    }
+}
+
+impl Debug for Registers {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(
+            f,
+            "PC: {:04X}\tSP: {:02X}\tAC: {:02X}\n\t\tX: {:02X}\tY: {:02X}\t\tSR: {:02X}",
+            self.pc, self.sp, self.ac, self.x, self.y, self.sr
+        )
     }
 }

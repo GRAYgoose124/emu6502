@@ -91,7 +91,7 @@ impl Debug for VirtualMachine {
 
         write!(
             f,
-            "VirtualMachine {{\n\tregisters: {:?}\n\tzero page:\n\t\t{:^30}\n\tstack:\n\t\t{}\n\theap[..0xFF]:\n\t\t{}\n}}",
+            "VirtualMachine {{\n\tregisters:\n\t\t{:?}\n\tzero page:\n\t\t{}\n\tstack:\n\t\t{}\n\theap[..0xFF]:\n\t\t{}\n}}",
             self.registers,
             hexfmt(&self.flatmap[..=0x0FF]),
             hexfmt(&self.flatmap[self.stack_bounds.0..=self.stack_bounds.1]),

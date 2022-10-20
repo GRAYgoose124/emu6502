@@ -7,6 +7,7 @@ use crate::vm::prelude::*;
 pub mod prelude {
     pub use crate::program::ProgramController;
 }
+
 /// Abstraction layer over crate::vm::VirtualMachine
 ///
 /// This trait is not strictly adhering to the VM hardware,
@@ -23,7 +24,13 @@ pub trait ProgramController {
 impl ProgramController for VirtualMachine {
     fn insert_program(&mut self, offset: usize, prog: &str) {
         let offset = offset + self.heap_bounds.0;
-        for (i, byte) in decode(prog).unwrap().iter().enumerate() {
+        let decoded = if let Ok(d) = decode(prog) {
+            d
+        } else {
+            panic!("Failed to decode program - it probably wasn't byte aligned or hex encoded.");
+        };
+
+        for (i, byte) in decoded.iter().enumerate() {
             self.flatmap[offset + i] = *byte;
         }
     }

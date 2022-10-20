@@ -15,3 +15,12 @@ rand = "0.8.5"
 
 [lib]
 crate-type = ["rlib"]
+
+[features]
+default = []
+debug_printing = ["show_mode", "show_fetched", "show_vm_instr", "show_vm_tick_arms", "show_ticked_instrs"]
+show_vm_instr = []
+show_ticked_instrs = []
+show_vm_tick_arms = []
+show_mode = []
+show_fetched = []

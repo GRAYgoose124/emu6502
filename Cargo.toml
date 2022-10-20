@@ -13,3 +13,6 @@ rand = "0.8.5"
 
 [dependencies.vm6502]
 path = "vm6502"
+
+[features]
+debug_vm = ["vm6502/debug_printing"]

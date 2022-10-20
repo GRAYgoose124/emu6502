@@ -68,10 +68,18 @@ impl Instructions for VirtualMachine {
         let value = self.fetch(); // Fetch is directed by the internal mode.
 
         let result = self.registers.ac as u16 + value as u16;
-
         let (carry, carried) = (result > 0xFF, result & 0xFF);
-        self.registers.ac = carried as u8;
 
+        #[cfg(feature = "show_vm_instr")]
+        println!(
+            "\t\tADC: {} + {} = {}, Carry: {}",
+            self.registers.ac,
+            value,
+            carried,
+            status!(Status::Carry) & self.registers.sr
+        );
+
+        self.registers.ac = carried as u8;
         self.set_status(Status::Carry, carry);
     }
 
