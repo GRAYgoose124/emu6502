@@ -4,7 +4,7 @@ use vm6502::status;
 // TODO: Backend to test direct instruction matching without
 // modifying machine state. API decisions
 #[test]
-fn test_vm_instr_adc_imd() {
+fn adc_imd() {
     let mut vm = VirtualMachine::new();
     let offset = 0x0000;
     vm.insert_program(offset, "69F06901");
@@ -20,7 +20,7 @@ fn test_vm_instr_adc_imd() {
 }
 
 #[test]
-fn test_vm_instr_and_imd() {
+fn and_imd() {
     let mut vm = VirtualMachine::new();
     let offset = 0x0000;
     vm.insert_program(offset, "29FF2900");
@@ -41,7 +41,7 @@ fn test_vm_instr_and_imd() {
 }
 
 #[test]
-fn test_vm_instr_asl() {
+fn asl_simple() {
     let mut vm = VirtualMachine::new();
     let prog = "0A0A";
     vm.registers.ac = 0xFF;
@@ -57,7 +57,7 @@ fn test_vm_instr_asl() {
 }
 
 #[test]
-fn test_vm_instr_cover_asl() {
+fn asl_cover() {
     let mut vm = VirtualMachine::new();
     let prog = "0A0A0A0A0A0A0A0A0A";
     vm.insert_program(vm.vheap_bounds.0, prog);
@@ -72,7 +72,7 @@ fn test_vm_instr_cover_asl() {
 }
 
 #[test]
-fn test_vm_instr_bcc() {
+fn bcc_simple() {
     let mut vm = VirtualMachine::new();
     let prog = "90F0";
     vm.insert_program(vm.vheap_bounds.0, prog);
@@ -80,4 +80,71 @@ fn test_vm_instr_bcc() {
 
     vm.tick();
     assert_eq!(vm.registers.pc, 0xF0);
+}
+
+#[test]
+fn bcc_no_page_cross() {
+    let mut vm = VirtualMachine::new();
+
+    let offset = 0x03;
+    let prog = format!("900{}", offset);
+    let mut slide = vm.vheap_bounds.0;
+
+    eprintln!(
+        "Start slide:   0x{:04X}, pc: 0x{:04X}",
+        slide, vm.registers.pc
+    );
+    assert_eq!(vm.registers.pc, slide as u16);
+
+    for _ in 0..0x55 {
+        vm.insert_program(slide, prog.as_str());
+        vm.tick();
+        slide += offset;
+        eprintln!("slide: 0x{:04X}, pc: 0x{:04X}", slide, vm.registers.pc);
+        assert_eq!(vm.registers.pc, slide as u16);
+    }
+}
+
+#[test]
+fn bcc_paging_cover_0xff() {
+    let mut vm = VirtualMachine::new();
+    let prog = "90FF";
+    let mut slide = vm.vheap_bounds.0;
+
+    eprintln!(
+        "Start slide:   0x{:04X}, pc: 0x{:04X}",
+        slide, vm.registers.pc
+    );
+    assert_eq!(vm.registers.pc, slide as u16);
+
+    for i in vm.heap_bounds.0..=0xFF {
+        eprintln!("|page 0x{:02X}", i);
+        vm.insert_program(slide, prog);
+        vm.tick();
+        slide += 0xFF;
+        eprintln!("|\tslide: 0x{:04X}, pc: 0x{:04X}", slide, vm.registers.pc);
+        assert_eq!(vm.registers.pc, slide as u16);
+    }
+}
+
+#[test]
+fn bcc_paging_cover0xfe() {
+    let mut vm = VirtualMachine::new();
+    let prog = "90FE";
+    let mut slide = vm.vheap_bounds.0;
+
+    eprintln!(
+        "Start slide:   0x{:04X}, pc: 0x{:04X}",
+        slide, vm.registers.pc
+    );
+    assert_eq!(vm.registers.pc, slide as u16);
+
+    for i in 0..=0xFF {
+        eprintln!("|page 0x{:02X}", i);
+        vm.insert_program(slide, prog);
+        vm.tick();
+        slide += 0xFE;
+        eprintln!("|\tslide: 0x{:04X}, pc: 0x{:04X}", slide, vm.registers.pc);
+        assert_eq!(vm.registers.pc, slide as u16);
+    }
 }

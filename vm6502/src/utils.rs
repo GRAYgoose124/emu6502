@@ -18,6 +18,17 @@ mod vm_macros {
             $vm.insert_program(offset, $prog);
         };
     }
+
+    #[macro_export]
+    macro_rules! check_page_cross {
+        ($vm:expr, $new_pc:expr) => {
+            if $new_pc & 0xFF00 != $vm.registers.pc & 0xFF00 {
+                true
+            } else {
+                false
+            }
+        };
+    }
 }
 
 #[macro_use]

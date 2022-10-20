@@ -8,7 +8,7 @@
 
 To run the project as a regular binary:
 
-    cargo run
+    cargo run --features=debug_vm
 
 Or to build it as a standalone binary and run:
 

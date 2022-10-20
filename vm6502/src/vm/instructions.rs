@@ -6,20 +6,34 @@ pub mod prelude {
     pub use crate::vm::instructions::Instructions;
 }
 
+/// Adds the instructions to the vm.
+///
+/// This is placed in a separate trait due to the inherent number of instructions.
 pub trait Instructions {
     fn adc(&mut self);
     fn and(&mut self);
     fn asl(&mut self);
-    fn bcc(&mut self);
-    fn bcs(&mut self);
-    fn beq(&mut self);
+
+    // Conditional instructions
+    /// Branch on carry clear
+    fn bcc(&mut self, offset: u8);
+    /// Branch on carry set
+    fn bcs(&mut self, offset: u8);
+    /// Branch on equal (zero set)
+    fn beq(&mut self, offset: u8);
+    /// Branch on minus (negative set)
+    fn bne(&mut self, offset: u8);
+    /// Branch on plus (negative clear)
+    fn bpl(&mut self, offset: u8);
+    // Branch on Minus (negative set)
+    fn bmi(&mut self, offset: u8);
+    /// Branch on overflow clear
+    fn bvc(&mut self, offset: u8);
+    /// Branch on overflow set
+    fn bvs(&mut self, offset: u8);
+
     fn bit(&mut self);
-    fn bmi(&mut self);
-    fn bne(&mut self);
-    fn bpl(&mut self);
     fn brk(&mut self);
-    fn bvc(&mut self);
-    fn bvs(&mut self);
     fn clc(&mut self);
     fn cld(&mut self);
     fn cli(&mut self);
@@ -114,57 +128,67 @@ impl Instructions for VirtualMachine {
         self.registers.ac = result;
     }
 
-    fn bcc(&mut self) {
-        let value = self.fetch() as i8;
-
+    fn bcc(&mut self, offset: u8) {
         #[cfg(feature = "show_vm_instr")]
-        println!("\t\tBCC: 0x{:02X}", value);
+        println!("\t\tBCC: 0x{:02X}", offset);
 
-        if !self.get_status(Status::Carry) {
-            #[cfg(feature = "show_vm_instr")]
-            println!(
-                "\t\t\tBranching by 0x{:02X} from 0x{:02X}",
-                value, self.registers.pc
-            );
-
-            let byte = self.registers.pc.to_be_bytes();
-            self.registers.pc = (byte[1] as u16) + (byte[0].wrapping_add_signed(value) as u16);
-        }
+        self.relative_jump(offset, !self.get_status(Status::Carry));
     }
 
-    fn bcs(&mut self) {
-        // todo!();
+    fn bcs(&mut self, offset: u8) {
+        #[cfg(feature = "show_vm_instr")]
+        println!("\t\tBCS: 0x{:02X}", offset);
+
+        self.relative_jump(offset, self.get_status(Status::Carry));
     }
 
-    fn beq(&mut self) {
-        // todo!();
+    fn beq(&mut self, offset: u8) {
+        #[cfg(feature = "show_vm_instr")]
+        println!("\t\tBEQ: 0x{:02X}", offset);
+
+        self.relative_jump(offset, self.get_status(Status::Zero));
+    }
+
+    fn bne(&mut self, offset: u8) {
+        #[cfg(feature = "show_vm_instr")]
+        println!("\t\tBEQ: 0x{:02X}", offset);
+
+        self.relative_jump(offset, !self.get_status(Status::Zero));
+    }
+
+    fn bpl(&mut self, offset: u8) {
+        #[cfg(feature = "show_vm_instr")]
+        println!("\t\tBPL: 0x{:02X}", offset);
+
+        self.relative_jump(offset, !self.get_status(Status::Negative));
+    }
+
+    fn bvc(&mut self, offset: u8) {
+        #[cfg(feature = "show_vm_instr")]
+        println!("\t\tBVC: 0x{:02X}", offset);
+
+        self.relative_jump(offset, !self.get_status(Status::Overflow));
+    }
+
+    fn bvs(&mut self, offset: u8) {
+        #[cfg(feature = "show_vm_instr")]
+        println!("\t\tBVS: 0x{:02X}", offset);
+
+        self.relative_jump(offset, self.get_status(Status::Overflow));
     }
 
     fn bit(&mut self) {
         // todo!();
     }
 
-    fn bmi(&mut self) {
-        // todo!();
-    }
+    fn bmi(&mut self, offset: u8) {
+        #[cfg(feature = "show_vm_instr")]
+        println!("\t\tBMI: 0x{:02X}", offset);
 
-    fn bne(&mut self) {
-        // todo!();
-    }
-
-    fn bpl(&mut self) {
-        // todo!();
+        self.relative_jump(offset, self.get_status(Status::Negative));
     }
 
     fn brk(&mut self) {
-        // todo!();
-    }
-
-    fn bvc(&mut self) {
-        // todo!();
-    }
-
-    fn bvs(&mut self) {
         // todo!();
     }
 

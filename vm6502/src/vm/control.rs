@@ -1,8 +1,8 @@
 use bitmatch::bitmatch;
 use std::fmt::{Debug, Formatter, Result};
 
+use crate::check_page_cross;
 use crate::prelude::*;
-//use crate::{pc_from_mode, cycles_from_mode};
 
 pub mod prelude {
     pub use crate::vm::control::InstructionController;
@@ -57,6 +57,9 @@ pub trait InstructionController {
     // TODO: Mode could be a macro, or other macros could be integrated. Consider this API decision more closely.
     fn mode(&mut self, op: u8) -> Mode;
     fn fetch(&mut self) -> u8;
+
+    //
+    fn relative_jump(&mut self, offset: u8, cond: bool);
 }
 
 /// Virtual machine core control functionality.
@@ -186,14 +189,9 @@ impl InstructionController for VirtualMachine {
             }
             // OPC $BB
             Mode::Relative => {
+                // TODO: Check if i should be setting this
                 //self.registers.pc += 1;
                 let bb = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize + 1];
-                // TODO: Write a test for this.
-                #[cfg(feature = "show_mode")]
-                println!(
-                    "\t\tRelative: 0x{:02X}",
-                    bb.wrapping_add(self.registers.pc.to_be_bytes()[1])
-                );
 
                 bb
             }
@@ -224,6 +222,26 @@ impl InstructionController for VirtualMachine {
         );
 
         fetched
+    }
+
+    // This is setting the offset for branch instructions inside of tick(). (TODO: refactor tick into get_op, tick, then add run.)
+    // Because we set the offset here, we don't set it in fetch(), instead we call it.
+    // TODO convert all self.flatmap[self.heap_bounds.0 + ....] to a self::HeapInterface.read() fn call
+    fn relative_jump(&mut self, fetched: u8, cond: bool) {
+        let offset = fetched as i16;
+        let newpc = self.registers.pc.wrapping_add_signed(offset);
+        self.cycles += 2;
+
+        #[cfg(feature = "show_relative_offset")]
+        println!("\t\tRelative jump: 0x{:02X}", offset);
+
+        if cond {
+            self.cycles += if check_page_cross!(self, newpc) { 2 } else { 1 };
+            self.registers.pc = newpc;
+
+            #[cfg(feature = "show_relative_offset")]
+            println!("\t\t\tRelative jump taken. PC: {:04X}", self.registers.pc);
+        }
     }
 
     /// Check the opcode and return the addressing mode.
@@ -328,6 +346,7 @@ impl InstructionController for VirtualMachine {
         self.addr_mode = m;
 
         // Push the current program counter to the stack for a relative jump.
+        // This is for precedures, move.
         if self.addr_mode == Mode::Relative {
             let old_ac = self.registers.ac;
             let bytes = self.registers.pc.to_be_bytes();
@@ -458,45 +477,51 @@ impl InstructionController for VirtualMachine {
                 #[cfg(feature = "show_vm_tick_arms")]
                 println!("\taaabbb00 arm, a={:02X}, b={:02X}", a, b);
 
+                // This is the only arm that triggers when op maps to Mode::Relative.
+                // Therefore, lets make the assumption that we can do the relative offset calculation here instead of in the fetch function.
+                // We are setting the PC
+                let offset = self.fetch();
+                println!("\t    Relative offset: 0x{:02X}", offset);
+
                 if b == 0b100 {
                     match a {
                         0x00 => {
-                            self.bpl();
+                            self.bpl(offset);
                             #[cfg(feature = "show_vm_instr_tick_match")]
                             println!("\t\tBPL");
                         }
                         0x01 => {
-                            self.bmi();
+                            self.bmi(offset);
                             #[cfg(feature = "show_vm_instr_tick_match")]
                             println!("\t\tBMI");
                         }
                         0x02 => {
-                            self.bvc();
+                            self.bvc(offset);
                             #[cfg(feature = "show_vm_instr_tick_match")]
                             println!("\t\tBVC");
                         }
                         0x03 => {
-                            self.bvs();
+                            self.bvs(offset);
                             #[cfg(feature = "show_vm_instr_tick_match")]
                             println!("\t\tBVS");
                         }
                         0x04 => {
-                            self.bcc();
+                            self.bcc(offset);
                             #[cfg(feature = "show_vm_instr_tick_match")]
                             println!("\t\tBCC");
                         }
                         0x05 => {
-                            self.bcs();
+                            self.bcs(offset);
                             #[cfg(feature = "show_vm_instr_tick_match")]
                             println!("\t\tBCS");
                         }
                         0x06 => {
-                            self.bne();
+                            self.bne(offset);
                             #[cfg(feature = "show_vm_instr_tick_match")]
                             println!("\t\tBNE");
                         }
                         0x07 => {
-                            self.beq();
+                            self.beq(offset);
                             #[cfg(feature = "show_vm_instr_tick_match")]
                             println!("\t\tBEQ");
                         }
@@ -666,6 +691,8 @@ impl InstructionController for VirtualMachine {
         // Skip the tick increment for relative branch instructions.
         if self.addr_mode != Mode::Relative {
             self.registers.pc += 1;
+        } else {
+            //  TODO: count relative cycles, with page bound crosses.
         }
 
         // TODO: This should be updated (along with the PC) by the above commands.
