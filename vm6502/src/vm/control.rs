@@ -116,21 +116,29 @@ impl InstructionController for VirtualMachine {
             // OPC $LLHH
             // operand is address $HHLL
             Mode::Absolute => {
-                let ll = self.flatmap[self.registers.pc as usize + 1];
-                let hh = self.flatmap[self.registers.pc as usize + 2];
-                self.flatmap[(hh as usize) << 8 | ll as usize]
+                self.registers.pc += 1;
+                let ll = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
+                self.registers.pc += 1;
+                let hh = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
+                self.flatmap[self.heap_bounds.0 + ((hh as usize) << 8 | ll as usize)]
             }
             // OPC $LLHH,X
             Mode::AbsoluteX => {
-                let ll = self.flatmap[self.registers.pc as usize + 1];
-                let hh = self.flatmap[self.registers.pc as usize + 2];
-                self.flatmap[(hh as usize) << 8 | ll as usize + self.registers.x as usize]
+                self.registers.pc += 1;
+                let ll = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
+                self.registers.pc += 1;
+                let hh = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
+                self.flatmap[self.heap_bounds.0
+                    + ((hh as usize) << 8 | ll as usize + self.registers.x as usize)]
             }
             // OPC $LLHH,Y
             Mode::AbsoluteY => {
-                let ll = self.flatmap[self.registers.pc as usize + 1];
-                let hh = self.flatmap[self.registers.pc as usize + 2];
-                self.flatmap[(hh as usize) << 8 | ll as usize + self.registers.y as usize]
+                self.registers.pc += 1;
+                let ll = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
+                self.registers.pc += 1;
+                let hh = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
+                self.flatmap[self.heap_bounds.0
+                    + ((hh as usize) << 8 | ll as usize + self.registers.y as usize)]
             }
             // OPC #$BB
             Mode::Immediate => {
@@ -141,54 +149,71 @@ impl InstructionController for VirtualMachine {
             Mode::Implied => 0,
             // OPC ($LLHH)
             Mode::Indirect => {
-                let ll = self.flatmap[self.registers.pc as usize + 1];
-                let hh = self.flatmap[self.registers.pc as usize + 2];
+                self.registers.pc += 1;
+                let ll = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
+                self.registers.pc += 1;
+                let hh = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
                 let addr = (hh as usize) << 8 | ll as usize;
-                self.flatmap[addr]
+                self.flatmap[self.heap_bounds.0 + addr]
             }
             // OPC ($LL, X)
             // operand is zeropage address; effective address is word in (LL + X, LL + X + 1),
             // inc. without carry: C.w($00LL + X)
             Mode::IndirectX => {
-                let ll = self.flatmap[(self.registers.pc + 1) as usize];
-                let ell = self.flatmap[ll as usize + self.registers.x as usize];
-                let ehh = self.flatmap[ll as usize + self.registers.x as usize + 1];
+                self.registers.pc += 1;
+
+                let ll = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
+                let ell =
+                    self.flatmap[self.heap_bounds.0 + ll as usize + self.registers.x as usize];
+                let ehh =
+                    self.flatmap[self.heap_bounds.0 + ll as usize + self.registers.x as usize + 1];
                 let addr = (ehh as usize) << 8 | ell as usize;
 
-                self.flatmap[addr]
+                self.flatmap[self.heap_bounds.0 + addr]
             }
             // OPC ($LL), Y
             // operand is zeropage address; effective address is word in (LL, LL + 1)
             // incremented by Y with carry: C.w($00LL) + Y
             // TODO: check if this is correct.
             Mode::IndirectY => {
-                let ll = self.flatmap[(self.registers.pc + 1) as usize];
-                let ell = self.flatmap[ll as usize];
-                let ehh = self.flatmap[ll as usize + 1];
+                self.registers.pc += 1;
+                let ll = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
+                let ell = self.flatmap[self.heap_bounds.0 + ll as usize];
+                let ehh = self.flatmap[self.heap_bounds.0 + ll as usize + 1];
                 let addr = (ehh as usize) << 8 | ell as usize + self.registers.y as usize;
 
-                self.flatmap[addr]
+                self.flatmap[self.heap_bounds.0 + addr]
             }
             // OPC $BB
             Mode::Relative => {
-                let bb = self.flatmap[self.registers.pc as usize + 1];
+                //self.registers.pc += 1;
+                let bb = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize + 1];
                 // TODO: Write a test for this.
-                self.flatmap[self.registers.pc.wrapping_add_signed((bb as i8).into()) as usize]
+                #[cfg(feature = "show_mode")]
+                println!(
+                    "\t\tRelative: 0x{:02X}",
+                    bb.wrapping_add(self.registers.pc.to_be_bytes()[1])
+                );
+
+                bb
             }
             // OPC $LL
             Mode::ZeroPage => {
-                let ll = self.flatmap[self.registers.pc as usize + 1];
-                self.flatmap[ll as usize]
+                self.registers.pc += 1;
+                let ll = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
+                self.flatmap[self.heap_bounds.0 + ll as usize]
             }
             // OPC $LL, X
             Mode::ZeroPageX => {
-                let ll = self.flatmap[self.registers.pc as usize + 1];
-                self.flatmap[ll as usize + self.registers.x as usize]
+                self.registers.pc += 1;
+                let ll = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
+                self.flatmap[self.heap_bounds.0 + ll as usize + self.registers.x as usize]
             }
             // OPC $LL, Y
             Mode::ZeroPageY => {
-                let ll = self.flatmap[self.registers.pc as usize + 1];
-                self.flatmap[ll as usize + self.registers.y as usize]
+                self.registers.pc += 1;
+                let ll = self.flatmap[self.heap_bounds.0 + self.registers.pc as usize];
+                self.flatmap[self.heap_bounds.0 + ll as usize + self.registers.y as usize]
             }
         };
 
@@ -301,6 +326,19 @@ impl InstructionController for VirtualMachine {
 
         // Update internal state
         self.addr_mode = m;
+
+        // Push the current program counter to the stack for a relative jump.
+        if self.addr_mode == Mode::Relative {
+            let old_ac = self.registers.ac;
+            let bytes = self.registers.pc.to_be_bytes();
+
+            self.registers.ac = bytes[1];
+            self.push();
+            self.registers.ac = bytes[0];
+            self.push();
+
+            self.registers.ac = old_ac;
+        }
 
         #[allow(unused_variables)]
         #[bitmatch]
@@ -418,95 +456,97 @@ impl InstructionController for VirtualMachine {
             }
             "aaabbb00" => {
                 #[cfg(feature = "show_vm_tick_arms")]
-                println!("\taaa___00 arm, a={:02X}, b={:02X}", a, b);
+                println!("\taaabbb00 arm, a={:02X}, b={:02X}", a, b);
 
-                match a {
-                    0x00 => {
-                        #[cfg(feature = "show_vm_instr_tick_match")]
-                        println!("\t\tBIT");
-                        self.bit()
+                if b == 0b100 {
+                    match a {
+                        0x00 => {
+                            self.bpl();
+                            #[cfg(feature = "show_vm_instr_tick_match")]
+                            println!("\t\tBPL");
+                        }
+                        0x01 => {
+                            self.bmi();
+                            #[cfg(feature = "show_vm_instr_tick_match")]
+                            println!("\t\tBMI");
+                        }
+                        0x02 => {
+                            self.bvc();
+                            #[cfg(feature = "show_vm_instr_tick_match")]
+                            println!("\t\tBVC");
+                        }
+                        0x03 => {
+                            self.bvs();
+                            #[cfg(feature = "show_vm_instr_tick_match")]
+                            println!("\t\tBVS");
+                        }
+                        0x04 => {
+                            self.bcc();
+                            #[cfg(feature = "show_vm_instr_tick_match")]
+                            println!("\t\tBCC");
+                        }
+                        0x05 => {
+                            self.bcs();
+                            #[cfg(feature = "show_vm_instr_tick_match")]
+                            println!("\t\tBCS");
+                        }
+                        0x06 => {
+                            self.bne();
+                            #[cfg(feature = "show_vm_instr_tick_match")]
+                            println!("\t\tBNE");
+                        }
+                        0x07 => {
+                            self.beq();
+                            #[cfg(feature = "show_vm_instr_tick_match")]
+                            println!("\t\tBEQ");
+                        }
+                        _ => self.nop(),
                     }
-                    0x01 => {
-                        #[cfg(feature = "show_vm_instr_tick_match")]
-                        println!("\t\tJSR");
-                        self.jsr()
+                } else {
+                    match a {
+                        0x00 => {
+                            #[cfg(feature = "show_vm_instr_tick_match")]
+                            println!("\t\tBIT");
+                            self.bit()
+                        }
+                        0x01 => {
+                            #[cfg(feature = "show_vm_instr_tick_match")]
+                            println!("\t\tJSR");
+                            self.jsr()
+                        }
+                        0x02 => {
+                            #[cfg(feature = "show_vm_instr_tick_match")]
+                            println!("\t\tJMP");
+                            self.jmp()
+                        }
+                        0x03 => {
+                            #[cfg(feature = "show_vm_instr_tick_match")]
+                            println!("\t\tSTY");
+                            self.sty()
+                        }
+                        0x04 => {
+                            #[cfg(feature = "show_vm_instr_tick_match")]
+                            println!("\t\tLDY");
+                            self.ldy()
+                        }
+                        0x05 => {
+                            #[cfg(feature = "show_vm_instr_tick_match")]
+                            println!("\t\tCPY");
+                            self.cpy()
+                        }
+                        0x06 => {
+                            #[cfg(feature = "show_vm_instr_tick_match")]
+                            println!("\t\tCPX");
+                            self.cpx()
+                        }
+                        _ => self.nop(),
                     }
-                    0x02 => {
-                        #[cfg(feature = "show_vm_instr_tick_match")]
-                        println!("\t\tJMP");
-                        self.jmp()
-                    }
-                    0x03 => {
-                        #[cfg(feature = "show_vm_instr_tick_match")]
-                        println!("\t\tSTY");
-                        self.sty()
-                    }
-                    0x04 => {
-                        #[cfg(feature = "show_vm_instr_tick_match")]
-                        println!("\t\tLDY");
-                        self.ldy()
-                    }
-                    0x05 => {
-                        #[cfg(feature = "show_vm_instr_tick_match")]
-                        println!("\t\tCPY");
-                        self.cpy()
-                    }
-                    0x06 => {
-                        #[cfg(feature = "show_vm_instr_tick_match")]
-                        println!("\t\tCPX");
-                        self.cpx()
-                    }
-                    _ => self.nop(),
                 }
             }
             // conditional jumps = aab10000
             "xxx10000" => {
                 #[cfg(feature = "show_vm_tick_arms")]
                 println!("\txxx10000 arm, x={:02X}", x);
-
-                match x {
-                    0x00 => {
-                        self.bpl();
-                        #[cfg(feature = "show_vm_instr_tick_match")]
-                        println!("\t\tBPL");
-                    }
-                    0x01 => {
-                        self.bmi();
-                        #[cfg(feature = "show_vm_instr_tick_match")]
-                        println!("\t\tBMI");
-                    }
-                    0x02 => {
-                        self.bvc();
-                        #[cfg(feature = "show_vm_instr_tick_match")]
-                        println!("\t\tBVC");
-                    }
-                    0x03 => {
-                        self.bvs();
-                        #[cfg(feature = "show_vm_instr_tick_match")]
-                        println!("\t\tBVS");
-                    }
-                    0x04 => {
-                        self.bcc();
-                        #[cfg(feature = "show_vm_instr_tick_match")]
-                        println!("\t\tBCC");
-                    }
-                    0x05 => {
-                        self.bcs();
-                        #[cfg(feature = "show_vm_instr_tick_match")]
-                        println!("\t\tBCS");
-                    }
-                    0x06 => {
-                        self.bne();
-                        #[cfg(feature = "show_vm_instr_tick_match")]
-                        println!("\t\tBNE");
-                    }
-                    0x07 => {
-                        self.beq();
-                        #[cfg(feature = "show_vm_instr_tick_match")]
-                        println!("\t\tBEQ");
-                    }
-                    _ => self.nop(),
-                }
             }
             "00001000" => {
                 self.php();
@@ -620,7 +660,13 @@ impl InstructionController for VirtualMachine {
             }
         };
 
-        self.registers.pc += 1;
+        #[cfg(feature = "show_vm_post_op")]
+        println!("{:?}", self);
+
+        // Skip the tick increment for relative branch instructions.
+        if self.addr_mode != Mode::Relative {
+            self.registers.pc += 1;
+        }
 
         // TODO: This should be updated (along with the PC) by the above commands.
         self.cycles

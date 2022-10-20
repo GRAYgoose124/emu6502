@@ -89,13 +89,16 @@ impl Debug for VirtualMachine {
                 .join("\n\t\t")
         };
 
+        let window = self.heap_bounds.0 + self.registers.pc as usize;
+
         write!(
             f,
-            "VirtualMachine {{\n\tregisters:\n\t\t{:?}\n\tzero page:\n\t\t{}\n\tstack:\n\t\t{}\n\theap[..0xFF]:\n\t\t{}\n}}",
+            "VirtualMachine {{\n\tregisters:\n\t\t{:?}\n\tzero page:\n\t\t{}\n\tstack:\n\t\t{}\n\theap[..0xFF]:\n\t\t{}\n\twindow: {}\n}}",
             self.registers,
             hexfmt(&self.flatmap[..=0x0FF]),
             hexfmt(&self.flatmap[self.stack_bounds.0..=self.stack_bounds.1]),
-            hexfmt(&self.flatmap[self.heap_bounds.0..=self.heap_bounds.0 + 0xFF])
+            hexfmt(&self.flatmap[self.heap_bounds.0..=self.heap_bounds.0 + 0xFF]),
+            format!("\n\t\tByte at PC: {:}", hexfmt(&self.flatmap[window-2..=window+2]))
         )
     }
 }

@@ -47,6 +47,13 @@ impl StatusInterface for VirtualMachine {
     fn get_status(&self, flag: Status) -> bool {
         let status = self.registers.sr;
 
+        #[cfg(feature = "show_status_get")]
+        println!(
+            "\t\t\tgetting status: {:?} = {}",
+            flag,
+            status & status!(flag) != 0
+        );
+
         status & status!(flag) != 0
     }
 

@@ -19,6 +19,9 @@ pub trait ProgramController {
 
     /// Fill the stack with ops.
     fn fill_stack(&mut self, ops: Vec<u8>);
+
+    /// Reset machine state.
+    fn reset(&mut self);
 }
 
 impl ProgramController for VirtualMachine {
@@ -44,5 +47,13 @@ impl ProgramController for VirtualMachine {
             self.registers.ac = *byte;
             self.push();
         }
+    }
+
+    fn reset(&mut self) {
+        self.flatmap.iter_mut().for_each(|m| {
+            *m = 0;
+        });
+
+        self.registers = Registers::new();
     }
 }

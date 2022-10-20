@@ -115,7 +115,21 @@ impl Instructions for VirtualMachine {
     }
 
     fn bcc(&mut self) {
-        // todo!();
+        let value = self.fetch() as i8;
+
+        #[cfg(feature = "show_vm_instr")]
+        println!("\t\tBCC: 0x{:02X}", value);
+
+        if !self.get_status(Status::Carry) {
+            #[cfg(feature = "show_vm_instr")]
+            println!(
+                "\t\t\tBranching by 0x{:02X} from 0x{:02X}",
+                value, self.registers.pc
+            );
+
+            let byte = self.registers.pc.to_be_bytes();
+            self.registers.pc = (byte[1] as u16) + (byte[0].wrapping_add_signed(value) as u16);
+        }
     }
 
     fn bcs(&mut self) {

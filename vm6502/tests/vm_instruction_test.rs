@@ -70,3 +70,14 @@ fn test_vm_instr_cover_asl() {
         assert_eq!(vm.registers.ac, 1 << i);
     }
 }
+
+#[test]
+fn test_vm_instr_bcc() {
+    let mut vm = VirtualMachine::new();
+    let prog = "90F0";
+    vm.insert_program(vm.vheap_bounds.0, prog);
+    vm.registers.sr &= status!(Status::Carry);
+
+    vm.tick();
+    assert_eq!(vm.registers.pc, 0xF0);
+}
