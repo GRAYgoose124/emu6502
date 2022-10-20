@@ -65,8 +65,9 @@ pub struct VirtualMachine {
     #[derivative(Default(value = "Mode::Absolute"))]
     pub addr_mode: Mode,
 
+    /// The current cycle count of the vm. This is incremented by [tick](InstructionController::tick).
     #[derivative(Default(value = "0"))]
-    cycles: u64,
+    pub cycles: u64,
 }
 
 impl VirtualMachine {
@@ -77,14 +78,24 @@ impl VirtualMachine {
 
 impl Debug for VirtualMachine {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        let hexfmt = |s: &[u8]| -> String {
+            hex::encode(s)
+                .to_uppercase()
+                .chars()
+                .collect::<Vec<char>>()
+                .chunks(64)
+                .map(|c| c.iter().collect::<String>())
+                .collect::<Vec<String>>()
+                .join("\n\t\t")
+        };
+
         write!(
             f,
-            "VirtualMachine {{\n\tregisters: {:?}\n\tzero page:\n\t\t{}\n\tstack:\n\t\t{}\n\theap[..0xFF]:\n\t\t{}\n}}",
+            "VirtualMachine {{\n\tregisters: {:?}\n\tzero page:\n\t\t{:^30}\n\tstack:\n\t\t{}\n\theap[..0xFF]:\n\t\t{}\n}}",
             self.registers,
-            hex::encode(&self.flatmap[..0x0FF]).to_uppercase(),
-            hex::encode(&self.flatmap[self.stack_bounds.0..self.stack_bounds.1]).to_uppercase(),
-            hex::encode(&self.flatmap[self.heap_bounds.0..self.heap_bounds.0 + 0xFF])
-                .to_uppercase()
+            hexfmt(&self.flatmap[..=0x0FF]),
+            hexfmt(&self.flatmap[self.stack_bounds.0..=self.stack_bounds.1]),
+            hexfmt(&self.flatmap[self.heap_bounds.0..=self.heap_bounds.0 + 0xFF])
         )
     }
 }
