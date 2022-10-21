@@ -11,7 +11,7 @@ pub mod prelude {
 
 /// Virtual machine addressing mode enum.
 ///
-#[derive(PartialEq)]
+#[derive(PartialEq, Copy, Clone)]
 pub enum Mode {
     Accumulator,
     Implied,

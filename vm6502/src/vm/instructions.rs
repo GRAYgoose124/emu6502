@@ -360,11 +360,39 @@ impl Instructions for VirtualMachine {
     }
 
     fn rol(&mut self) {
-        // todo!();
+        let data = self.fetch();
+        let mode = self.addr_mode;
+        let addr = data;
+
+        // If there's a 1 in the 1's place, it will be shifted off.
+        let carried = |f: u8| f & 0x01 != 0;
+
+        // TODO: Factor out these matches. Memory or Accumulator OP
+        let operation = |d: &mut u8| -> (u8, bool) {
+            let r = *d << 1;
+            let c = carried(r);
+            *d = r;
+            (r, c)
+        };
+
+        // Perhaps we can use a closure to do this....wtf xD
+        // Because flatmap and registers are different types, we can't use a closure simply.
+        let (r, c) = match mode {
+            Mode::Accumulator => operation(&mut self.registers.ac),
+            Mode::ZeroPage => operation(&mut self.flatmap[addr as usize]),
+            Mode::ZeroPageX => operation(&mut self.flatmap[(addr + self.registers.x) as usize]),
+            Mode::Absolute => operation(&mut self.flatmap[addr as usize]),
+            Mode::AbsoluteX => operation(&mut self.flatmap[(addr + self.registers.x) as usize]),
+            
+            _ => panic!("Invalid addressing mode for ROL"),
+        };  
+
+        self.set_status(Status::Carry, c);
+        self.set_status(Status::Zero, r == 0);
+        self.set_status(Status::Negative, r & 0x80 != 0);
     }
 
     fn ror(&mut self) {
-        // todo!();
     }
 
     fn rti(&mut self) {
@@ -400,19 +428,28 @@ impl Instructions for VirtualMachine {
     }
 
     fn sty(&mut self) {
+        // TODO: Factor out these matches. Set Heap OP
         match self.addr_mode {
+            // Code duplication because we are not able to precalculate whether we're 
+            // fetching or setting a heap addr. Because we're adhering to u8 types we 
+            // can't simply return the whole address.
+            //
+            // So, we need to potentially set the heap or fetch from it. If we could 
+            // return references, we can return those from a generalized match.
+            // 
+            // If we can do this here, we can also likely do it for ror/rol functions.
+            // We're likely missing a logical step that conforms to the 6502 structure.
+            // TODO: whew.
             Mode::ZeroPage => {
                 let addr = self.fetch() as usize;
-                // Only 0x00 - 0xFF, self.fetch returns u8 so this is guaranteed.
-                self.flatmap[addr] = self.registers.y;
+                self.flatmap[addr] = self.registers.y;         // Only 0x00 - 0xFF, self.fetch returns u8 so this is guaranteed.
             }
             Mode::ZeroPageX => {
                 let addr = (self.fetch() as usize + self.registers.x as usize) & 0xFF;
-                self.flatmap[addr] = self.registers.y;
+                self.flatmap[addr] = self.registers.y; 
             }
             Mode::Absolute => {
                 let addr = self.fetch();
-                // TODO: change fetch to return raw addr, maybe call it fetch_addr.
                 self.flatmap[addr as usize] = self.registers.y;
             }
             _ => panic!("Invalid addressing mode for STY"),
@@ -421,6 +458,7 @@ impl Instructions for VirtualMachine {
 
     fn tax(&mut self) {
         self.registers.x = self.registers.ac;
+        // TODO: We can definitely create a helper for the transfer instructions.
         self.set_status(Status::Zero, self.registers.x == 0);
         self.set_status(Status::Negative, self.registers.x & 0x80 != 0);
     }
