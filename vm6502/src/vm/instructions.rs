@@ -250,7 +250,7 @@ impl Instructions for VirtualMachine {
     }
 
     fn jmp(&mut self) {
-        // todo!();
+        //let addr = self.fetch();
     }
 
     fn jsr(&mut self) {
@@ -258,19 +258,74 @@ impl Instructions for VirtualMachine {
     }
 
     fn lda(&mut self) {
-        // todo!();
+        let data = self.fetch();
+        self.registers.ac = data;
+
+        self.set_status(Status::Zero, self.registers.ac == 0);
+        self.set_status(Status::Negative, self.registers.ac & 0x80 != 0);
     }
 
     fn ldx(&mut self) {
-        // todo!();
+        let data = self.fetch();
+        self.registers.x = data;
+
+        self.set_status(Status::Zero, data == 0);
+        self.set_status(Status::Negative, data & 0x80 != 0);
     }
 
     fn ldy(&mut self) {
-        // todo!();
+        let data = self.fetch();
+        self.registers.y = data;
+
+        self.set_status(Status::Zero, data == 0);
+        self.set_status(Status::Negative, data & 0x80 != 0);
     }
 
     fn lsr(&mut self) {
-        // todo!();
+        let data = self.fetch();
+
+        // If there's a 1 in the 1's place, it will shifted off.
+        let carried = |f| f & 0x01 != 0;
+
+        // We gotta be able to refactor out all these matches.
+        let (c, r) = match self.addr_mode {
+            Mode::Accumulator => {
+                let carry = carried(self.registers.ac);
+                let result = self.registers.ac >> 1;
+                self.registers.ac = result;
+                (carry, result)
+            }
+            Mode::ZeroPage => {
+                let carry = carried(self.flatmap[data as usize]);
+                let result = self.flatmap[data as usize] >> 1;
+                self.flatmap[data as usize] = result;
+                (carry, result)
+            }
+            Mode::ZeroPageX => {
+                let carry = carried(self.flatmap[(data + self.registers.x) as usize]);
+                let result = self.flatmap[(data + self.registers.x) as usize] >> 1;
+                self.flatmap[(data + self.registers.x) as usize] = result;
+                (carry, result)
+            }
+            Mode::Absolute => {
+                let carry = carried(self.flatmap[data as usize]);
+                let result = self.flatmap[data as usize] >> 1;
+                self.flatmap[data as usize] = result;
+                (carry, result)
+            }
+            Mode::AbsoluteX => {
+                let carry = carried(self.flatmap[(data + self.registers.x) as usize]);
+                let result = self.flatmap[(data + self.registers.x) as usize] >> 1;
+                self.flatmap[(data + self.registers.x) as usize] = result;
+                (carry, result)
+            }
+            _ => panic!("Invalid addressing mode for LSR"),
+        };
+
+        // Set the carry flag when losing the 1's place.
+        self.set_status(Status::Carry, c);
+        self.set_status(Status::Zero, r == 0);
+        self.set_status(Status::Negative, false);
     }
 
     fn nop(&mut self) {}
@@ -294,6 +349,7 @@ impl Instructions for VirtualMachine {
     fn pla(&mut self) {
         let sts = self.pop();
         self.registers.ac = sts;
+
         self.set_status(Status::Zero, sts == 0);
         self.set_status(Status::Negative, sts & 0x80 != 0);
     }

@@ -73,13 +73,18 @@ def select_table():
         case "id":
             print("Decimal to Hexadecimal and Binary")
             print_table(gids)
+        case "exit"|"quit":
+            return False
         case _:
-            print("Invalid selection")
+            pass
+    
+    return True
 
 
 def selection_loop():
-    while True:
-        select_table()
+    cont = True
+    while cont:
+        cont = select_table()
         print()
 
 

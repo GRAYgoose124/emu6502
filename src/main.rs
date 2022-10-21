@@ -3,7 +3,7 @@ use std::time::Duration;
 
 use vm6502::prelude::*;
 
-fn do_program(vm: &mut VirtualMachine, prog: &str, offset: u16) {
+fn do_program(vm: &mut VirtualMachine, offset: u16, prog: &str) {
     vm.set_program(offset, prog);
     println!("Loaded program and set PC appropriately:\n{}\n", prog);
 
@@ -25,5 +25,6 @@ fn do_program(vm: &mut VirtualMachine, prog: &str, offset: u16) {
 fn main() {
     let mut vm = VirtualMachine::new();
 
-    do_program(&mut vm, "69016901690169016901690169016901690169016901690169016901690169016901690169016901690169016901690169016901690169016901", 0x0000);
+    do_program(&mut vm, 0x0000, "00");
+    vm.reset();
 }

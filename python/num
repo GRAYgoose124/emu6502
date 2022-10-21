@@ -1,50 +1,37 @@
 #!/bin/python3
 import argparse
+import columnize
+
+from num_tables import *
+
+
+def parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("num", type=str, nargs="?")
+
+    args = parser.parse_args()
+        
+    return args
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("num", type=int, nargs="?")
-    parser.add_argument("-b", "--binary", action="store_true")
-    parser.add_argument("-d", "--decimal", action="store_true")
-    parser.add_argument("-x", "--hexadecimal", action="store_true")
-    parser.add_argument("-i", "--inverse", action="store_true")
-    parser.add_argument("-c", "--columnize", action="store_true")
-    parser.add_argument("-r", "--reverse", action="store_true")
-    args = parser.parse_args()
+    args = parser()
 
-    if args.columnize:
-        import columnize
-        print(columnize.columnize([f"{n:3}:{n:08b}:{n:02X}" for n in range(0xFF+1)], displaywidth=134))
-        return
-
-    if args.num is None:
-        print("Missing required argument: num")
-        return
-
-    if args.binary:
-        print(bin(args.num))
-    if args.decimal:
-        print(args.num)
-    if args.hexadecimal:
-        print(hex(args.num))
-
-    if args.inverse:
-        if args.binary:
-            print(int(bin(args.num)[2:], 2))
-        if args.decimal:
-            print(int(args.num))
-        if args.hexadecimal:
-            print(int(hex(args.num)[2:], 16))
-
-    if args.reverse:
-        if args.binary:
-            print(int(bin(args.num)[2:][::-1], 2))
-        if args.decimal:
-            print(int(str(args.num)[::-1]))
-        if args.hexadecimal:
-            print(int(hex(args.num)[2:][::-1], 16))
-
+    n = args.num
+    if args.num is not None:
+        if "0x" in n:
+            m = int(n[2:], 16)
+            print(n, b(m), d(m))
+        elif "0b" in args.num:
+            m = int(n[2:], 2)
+            print(n, h(m), d(m))
+        elif args.num.isdigit():
+            m = int(n)
+            print(n, h(m), b(m))
+        
+    else:
+        print(columnize.columnize([f"{n:3}:{n:08b}:{n:02X}" for n in range(0xFF+1)], displaywidth=360))
+    
 
 if __name__ == "__main__":
     main()

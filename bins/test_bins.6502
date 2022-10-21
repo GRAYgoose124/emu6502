@@ -1,0 +1,108 @@
+; https://sites.google.com/site/6502asembly/code-examples/arithmetic/crc32_add
+;---------------------------------------------
+;CRC32_add
+; Purposes:
+;	1. Add the CRC32 Checksum
+; Input: 
+; Output:
+; Required Variables:
+; Required Functions:
+; Required Table:
+; Labels used:
+;	1. CRC32_add:
+;	2. LOOP2:
+;	3. COMPL2:
+; Variables used:
+;	1. CRC...CRC+3
+;	2. tmp3:tmp2
+; Constant used:
+; Function used:
+; Used by:
+; Version: 1.0
+; Revision Date: 28/8/2006
+;---------------------------------------------
+CRC32_add:
+	LDY #$FF  ; A0 FF
+	STY  CRC  ; 
+	STY CRC+1
+	STY CRC+2
+	STY CRC+3
+	INY
+LOOP2   LDA  (tmp2)
+	INC tmp2
+	EOR CRC	 ; Quick CRC computation with lookup tables
+	TAX
+	LDA  CRC+1
+	EOR CRCT0,X
+	STA CRC
+	LDA  CRC+2
+	EOR CRCT1,X
+	STA  CRC+1
+	LDA  CRC+3
+	EOR CRCT2,X
+	STA CRC+2
+	LDA  CRCT3,X
+	STA  CRC+3
+	INY
+	CPY crc_len
+	BNE LOOP2
+	LDY #3
+COMPL2  LDA  CRC,Y
+	EOR #$FF
+	STA  CRC,Y
+	DEY
+	BPL  COMPL2
+	;add CRC registers to the end
+	LDA  CRC+3
+	STA  (tmp2)
+	INC tmp2
+	LDA  CRC+2
+	STA  (tmp2)
+	INC tmp2
+	LDA CRC+1
+	STA  (tmp2)
+	INC tmp2
+	LDA  CRC
+
+	STA (tmp2)
+	RTS
+;End of CRC32_add
+;---------------------------------------------
+
+;---------------------------------------------
+;Memory_Copy:
+; Purposes:
+;	1. Copy a predined block of memory to specific address.
+; Input: 
+;	1. Source: tmp3:tmp2
+;	2. Destination: tmp5:tmp4
+;	3. Length: X
+; Output:
+; Required Variables:
+; Required Functions:
+; Required Table:
+; Labels used:
+; Variables used:
+; Constant used:
+; Function used:
+; Used by:
+; Version: 1.0
+; Revision Date: 28/8/2006
+;---------------------------------------------
+Memory_Copy:
+	LDA (tmp2)
+	STA (tmp4)
+	INC tmp2
+	BNE Memory_Copy_01
+	INC tmp3
+Memory_Copy_01:
+	INC tmp4
+	BNE Memory_Copy_02
+	INC tmp5
+Memory_Copy_02:
+	DEX
+	BNE Memory_Copy 
+Memory_Copy_Exit:
+	RTS
+;End of Memory_Copy
+;---------------------------------------------
