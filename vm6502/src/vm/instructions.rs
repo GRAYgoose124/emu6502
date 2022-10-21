@@ -10,6 +10,7 @@ pub mod prelude {
 ///
 /// This is placed in a separate trait due to the inherent number of instructions.
 pub trait Instructions {
+    fn abs_zp_acc_op(&mut self, operation: fn(u8) -> u8);
     /// Add with carry
     fn adc(&mut self);
     /// Logical AND
@@ -359,40 +360,42 @@ impl Instructions for VirtualMachine {
         self.registers.sr = sts;
     }
 
-    fn rol(&mut self) {
+    // TODO: Move to separate mod, general_instructions?
+    /// Accumulator <-> ZeroPage, Absolute, ZeroPageX and AbsoluteX
+    fn abs_zp_acc_op(&mut self, operation: fn(u8) -> u8) {
         let data = self.fetch();
-        let mode = self.addr_mode;
-        let addr = data;
 
-        // If there's a 1 in the 1's place, it will be shifted off.
         let carried = |f: u8| f & 0x01 != 0;
 
-        // TODO: Factor out these matches. Memory or Accumulator OP
-        let operation = |d: &mut u8| -> (u8, bool) {
-            let r = *d << 1;
+        // Performs an operation and moves it to destination.
+        let doit = |d: &mut u8| -> (u8, bool) {
+            let r = operation(*d);
             let c = carried(r);
             *d = r;
             (r, c)
         };
 
-        // Perhaps we can use a closure to do this....wtf xD
-        // Because flatmap and registers are different types, we can't use a closure simply.
-        let (r, c) = match mode {
-            Mode::Accumulator => operation(&mut self.registers.ac),
-            Mode::ZeroPage => operation(&mut self.flatmap[addr as usize]),
-            Mode::ZeroPageX => operation(&mut self.flatmap[(addr + self.registers.x) as usize]),
-            Mode::Absolute => operation(&mut self.flatmap[addr as usize]),
-            Mode::AbsoluteX => operation(&mut self.flatmap[(addr + self.registers.x) as usize]),
-            
+        let (r, c) = match self.addr_mode {
+            Mode::Accumulator => doit(&mut self.registers.ac),
+            Mode::ZeroPage => doit(&mut self.flatmap[data as usize]),
+            Mode::ZeroPageX => doit(&mut self.flatmap[(data + self.registers.x) as usize]),
+            Mode::Absolute => doit(&mut self.flatmap[data as usize]),
+            Mode::AbsoluteX => doit(&mut self.flatmap[(data + self.registers.x) as usize]),
+
             _ => panic!("Invalid addressing mode for ROL"),
-        };  
+        };
 
         self.set_status(Status::Carry, c);
         self.set_status(Status::Zero, r == 0);
         self.set_status(Status::Negative, r & 0x80 != 0);
     }
 
+    fn rol(&mut self) {
+        self.abs_zp_acc_op(|d| d << 1);
+    }
+
     fn ror(&mut self) {
+        self.abs_zp_acc_op(|d| d >> 1);
     }
 
     fn rti(&mut self) {
@@ -430,27 +433,17 @@ impl Instructions for VirtualMachine {
     fn sty(&mut self) {
         // TODO: Factor out these matches. Set Heap OP
         match self.addr_mode {
-            // Code duplication because we are not able to precalculate whether we're 
-            // fetching or setting a heap addr. Because we're adhering to u8 types we 
-            // can't simply return the whole address.
-            //
-            // So, we need to potentially set the heap or fetch from it. If we could 
-            // return references, we can return those from a generalized match.
-            // 
-            // If we can do this here, we can also likely do it for ror/rol functions.
-            // We're likely missing a logical step that conforms to the 6502 structure.
-            // TODO: whew.
             Mode::ZeroPage => {
                 let addr = self.fetch() as usize;
-                self.flatmap[addr] = self.registers.y;         // Only 0x00 - 0xFF, self.fetch returns u8 so this is guaranteed.
+                self.flatmap[addr] = self.registers.y; // Only 0x00 - 0xFF, self.fetch returns u8 so this is guaranteed.
             }
             Mode::ZeroPageX => {
                 let addr = (self.fetch() as usize + self.registers.x as usize) & 0xFF;
-                self.flatmap[addr] = self.registers.y; 
+                self.flatmap[addr] = self.registers.y;
             }
             Mode::Absolute => {
-                let addr = self.fetch();
-                self.flatmap[addr as usize] = self.registers.y;
+                let addr = self.fetch() as usize;
+                self.flatmap[addr] = self.registers.y; // TODO: Check if this is valid, not sure about Absolute mode.
             }
             _ => panic!("Invalid addressing mode for STY"),
         }
