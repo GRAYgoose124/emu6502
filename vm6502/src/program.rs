@@ -30,6 +30,7 @@ pub trait ProgramController {
 }
 
 impl ProgramController for VirtualMachine {
+    /// Insert a hex encoded string `prog` at heap offset `offset`.s
     fn insert_program(&mut self, offset: u16, prog: &str) {
         let offset = offset + self.heap_bounds.0 as u16;
         let decoded = if let Ok(d) = decode(prog) {
@@ -43,11 +44,14 @@ impl ProgramController for VirtualMachine {
         }
     }
 
+    // TODO: Higher level program allocator.
+    /// Replaces and runs the program at `offset`.
     fn set_program(&mut self, offset: u16, prog: &str) {
         self.insert_program(offset, prog);
         self.registers.pc = offset as u16;
     }
 
+    /// Run the internally set program for `duration` time, returning the number of cycles executed.
     fn run(&mut self, duration: Duration) -> u64 {
         let old_cycles = self.cycles;
         let start = Instant::now();
@@ -58,12 +62,14 @@ impl ProgramController for VirtualMachine {
         self.cycles - old_cycles
     }
 
+    /// Resets the total machine state.
     fn reset(&mut self) {
         self.flatmap.iter_mut().for_each(|m| {
             *m = 0;
         });
 
         self.registers = Registers::new();
+        self.cycles = 0;
     }
 
     // TODO: move to helpers? macro?

@@ -22,7 +22,7 @@ default = ["check_heap_bounds"]
 # Debug features
 full_debug_printing = ["show_vm_post_op", "debug_printing"]
 debug_printing = ["show_relative_offset", "show_mode", "show_status", "short_printing"]
-short_printing = ["show_vm_instr", "show_vm_instr", "show_vm_tick_arms", "show_ticked_instrs", "vm_errors"]
+short_printing = ["show_vm_instr", "show_vm_instr", "show_vm_tick_arms", "show_ticked_instrs"]
 pretty_printing = ["ops_only"]
 ops_only = ["show_ticked_instrs"]
 show_vm_instr = []

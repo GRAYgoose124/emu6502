@@ -17,5 +17,6 @@ path = "vm6502"
 [features]
 defaults = ["vm6502/pretty_printing"]
 
+ugly_vm = ["vm6502/full_debug_printing"]
 debug_vm = ["vm6502/debug_printing"]
 pretty_vm = ["vm6502/pretty_printing"]

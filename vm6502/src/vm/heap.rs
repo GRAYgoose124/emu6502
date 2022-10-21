@@ -22,37 +22,16 @@ pub trait HeapInterface {
     fn get_page_offset(&self) -> u8;
     // Add an the virt_addr to the high byte of the PC - it's a "magic" jump, bypassing modes.
     fn set_page_offset(&mut self, virt_addr: u8);
-}
 
-fn bounds_check(virt_addr: usize, bounds: (usize, usize)) -> bool {
-    if virt_addr < bounds.0 {
-        #[cfg(feature = "passthrough_failure")]
-        {
-            panic!("Attempted to access heap before heap bounds!");
-        }
-        #[cfg(not(feature = "passthrough_failure"))]
-        {
-            return false;
-        }
-    } else if virt_addr > bounds.1 {
-        #[cfg(feature = "passthrough_failure")]
-        {
-            panic!("Attempted to access heap after heap bounds!");
-        }
-        #[cfg(not(feature = "passthrough_failure"))]
-        {
-            return false;
-        }
-    }
-    true
+    fn bounds_check(&self, virt_addr: u16) -> bool;
 }
 
 impl HeapInterface for VirtualMachine {
     fn get_heap(&self, virt_addr: u16) -> u8 {
         #[cfg(feature = "check_heap_bounds")]
-        if bounds_check(virt_addr as usize, self.vheap_bounds) {
+        if !self.bounds_check(self.registers.pc + virt_addr) {
             println!("Crossed virtual heap bounds!");
-        } else if bounds_check(virt_addr as usize, self.heap_bounds) {
+        } else if !self.bounds_check(self.registers.pc + virt_addr) {
             println!("Crossed heap bounds!");
         }
 
@@ -61,9 +40,9 @@ impl HeapInterface for VirtualMachine {
 
     fn set_heap(&mut self, virt_addr: u16, byte: u8) {
         #[cfg(feature = "check_heap_bounds")]
-        if bounds_check(virt_addr as usize, self.vheap_bounds) {
+        if !self.bounds_check(self.registers.pc + virt_addr) {
             println!("Crossed virtual heap bounds!");
-        } else if bounds_check(virt_addr as usize, self.heap_bounds) {
+        } else if !self.bounds_check(self.registers.pc + virt_addr) {
             println!("Crossed heap bounds!");
         }
 
@@ -79,13 +58,37 @@ impl HeapInterface for VirtualMachine {
     fn set_page_offset(&mut self, virt_addr: u8) {
         let new_pc = (self.registers.pc & 0x00FF) | (virt_addr as u16) << 8;
         #[cfg(feature = "check_heap_bounds")]
-        if !bounds_check(new_pc as usize, self.vheap_bounds) {
+        if !self.bounds_check(new_pc) {
             println!("Crossed virtual heap bounds!");
-        } else if !bounds_check(new_pc as usize, self.heap_bounds) {
+        } else if !self.bounds_check(new_pc) {
             println!("Crossed heap bounds!");
         }
 
         self.registers.pc = new_pc;
+    }
+
+    fn bounds_check(&self, virt_addr: u16) -> bool {
+        if virt_addr < self.vheap_bounds.0 as u16 {
+            #[cfg(feature = "passthrough_failure")]
+            {
+                panic!("Attempted to access heap before heap bounds!");
+            }
+            #[cfg(not(feature = "passthrough_failure"))]
+            {
+                false
+            }
+        } else if virt_addr > self.vheap_bounds.1 as u16 {
+            #[cfg(feature = "passthrough_failure")]
+            {
+                panic!("Attempted to access heap after heap bounds!");
+            }
+            #[cfg(not(feature = "passthrough_failure"))]
+            {
+                false
+            }
+        } else {
+            true
+        }
     }
 }
 
