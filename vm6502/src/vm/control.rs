@@ -49,8 +49,8 @@ impl Debug for Mode {
 }
 
 pub trait InstructionController {
-    fn tick(&mut self) -> u64;
-    // TODO: Abstract matches out of tick so that you can get the ops then tick with opcode.
+    fn step(&mut self) -> u64;
+    // TODO: Abstract matches out of step so that you can get the ops then step with opcode.
     // fn opcode(&mut self, op: &str);
     // fn opcode(&mut self, op: u8);
 
@@ -64,10 +64,10 @@ pub trait InstructionController {
 
 /// Virtual machine core control functionality.
 ///
-/// This provides three main internal functions, `tick`, `mode`, and `fetch`.
+/// This provides three main internal functions, `step`, `mode`, and `fetch`.
 ///
 /// # Examples
-/// ## `tick`
+/// ## `step`
 /// ```
 /// use vm6502::prelude::*;
 /// let mut vm = VirtualMachine::new();
@@ -75,7 +75,7 @@ pub trait InstructionController {
 /// vm.insert_program(0x00, "69FFFF");
 /// vm.registers.pc = 0x00;
 ///
-/// vm.tick();
+/// vm.step();
 ///
 /// assert_eq!(vm.addr_mode, Mode::Immediate);
 /// assert_eq!(vm.flatmap[vm.registers.pc as usize + vm.heap_bounds.0], 0xFF);
@@ -226,7 +226,7 @@ impl InstructionController for VirtualMachine {
         fetched
     }
 
-    // This is setting the offset for branch instructions inside of tick(). (TODO: refactor tick into get_op, tick, then add run.)
+    // This is setting the offset for branch instructions inside of step(). (TODO: refactor step into get_op, step, then add run.)
     // Because we set the offset here, we don't set it in fetch(), instead we call it.
     // TODO convert all self.flatmap[self.heap_bounds.0 + ....] to a self::HeapInterface.read() fn call
     fn relative_jump(&mut self, fetched: u8, cond: bool) {
@@ -335,7 +335,7 @@ impl InstructionController for VirtualMachine {
 
     /// Execute the an arbitrary op. It returns the vm's current `cycle` count.
     #[bitmatch]
-    fn tick(&mut self) -> u64 {
+    fn step(&mut self) -> u64 {
         // Get current op
         let op = self.flatmap[self.registers.pc as usize + self.heap_bounds.0];
         // Set internal mode.

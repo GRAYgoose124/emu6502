@@ -15,7 +15,7 @@ mod vm_macros {
     macro_rules! stuff_program_at_end {
         ($vm:expr, $prog:expr) => {
             let offset = $vm.vheap_bounds.1 - ($prog.len() / 2);
-            $vm.insert_program(offset, $prog);
+            $vm.insert_program(offset as u16, $prog);
         };
     }
 

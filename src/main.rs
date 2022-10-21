@@ -9,32 +9,32 @@ fn main() {
 
     let prog = "69F00A290069FF9002";
     // vm.insert_program(vm.vheap_bounds.1 - (prog.len() / 2), prog);
-    vm.insert_program(vm.vheap_bounds.0, prog);
+    vm.insert_program(vm.vheap_bounds.0 as u16, prog);
     println!("Running program: {}", prog);
 
     vm.registers.ac = 0x0F;
     debug_assert_eq!(vm.registers.pc, 0x0000);
     debug_assert_eq!(vm.registers.ac, 0x0F);
 
-    vm.tick();
+    vm.step();
     debug_assert_eq!(vm.registers.ac, 0xFF);
 
-    vm.tick();
+    vm.step();
     debug_assert_eq!(vm.registers.ac, 0xFE);
 
-    vm.tick();
+    vm.step();
     debug_assert_eq!(vm.registers.ac, 0x00);
 
     vm.registers.ac = 0x01;
-    vm.tick();
+    vm.step();
     debug_assert_eq!(vm.registers.ac, 0x00);
     debug_assert_eq!(vm.registers.sr & status!(Status::Carry), 1);
 
     vm.registers.sr &= !status!(Status::Carry);
-    vm.tick();
+    vm.step();
 
     vm.reset();
-    vm.insert_program(vm.vheap_bounds.0, "90FF");
-    vm.tick();
+    vm.insert_program(vm.vheap_bounds.0 as u16, "90FF");
+    vm.step();
     assert_eq!(vm.registers.pc, 0xFF);
 }

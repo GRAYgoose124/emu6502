@@ -120,6 +120,9 @@ fn test_vm_insert_program() {
     vm.insert_program(offset, prog);
 
     for (i, byte) in decoded.iter().enumerate() {
-        assert_eq!(vm.flatmap[vm.heap_bounds.0 + offset + i], *byte);
+        assert_eq!(
+            vm.flatmap[(vm.heap_bounds.0 as u16 + offset + i as u16) as usize],
+            *byte
+        );
     }
 }

@@ -10,11 +10,11 @@ fn adc_imd() {
     vm.insert_program(offset, "69F06901");
     vm.registers.pc = offset as u16;
     vm.registers.ac = 0x0F;
-    vm.tick();
+    vm.step();
 
     assert_eq!(vm.registers.ac, 0xFF);
 
-    vm.tick();
+    vm.step();
     assert_eq!(vm.registers.sr & status!(Status::Carry), 1);
     assert_eq!(vm.registers.ac, 0x00);
 }
@@ -26,12 +26,12 @@ fn and_imd() {
     vm.insert_program(offset, "29FF2900");
     vm.registers.pc = offset as u16;
     vm.registers.ac = 0x0F;
-    vm.tick();
+    vm.step();
 
     assert_eq!(vm.registers.ac, 0x0F);
     assert_eq!(vm.registers.sr & status!(Status::Zero), 0);
 
-    vm.tick();
+    vm.step();
     assert_eq!(vm.registers.ac, 0x00);
     eprintln!("sr: 0x{:08b}", vm.registers.sr);
     assert_eq!(
@@ -46,12 +46,12 @@ fn asl_simple() {
     let prog = "0A0A";
     vm.registers.ac = 0xFF;
 
-    vm.insert_program(vm.vheap_bounds.0, prog);
-    vm.tick();
+    vm.insert_program(vm.vheap_bounds.0 as u16, prog);
+    vm.step();
     assert_eq!(vm.registers.ac, 0xFE);
     assert_eq!(vm.registers.sr & status!(Status::Carry), 1);
 
-    vm.tick();
+    vm.step();
     assert_eq!(vm.registers.ac, 0xFC);
     assert_eq!(vm.registers.sr & status!(Status::Carry), 1);
 }
@@ -60,11 +60,11 @@ fn asl_simple() {
 fn asl_cover() {
     let mut vm = VirtualMachine::new();
     let prog = "0A0A0A0A0A0A0A0A0A";
-    vm.insert_program(vm.vheap_bounds.0, prog);
+    vm.insert_program(vm.vheap_bounds.0 as u16, prog);
     vm.registers.ac = 0x01;
 
     for i in 1..8 {
-        vm.tick();
+        vm.step();
         eprintln!("i: {}, ac: {}", 1 << i, vm.registers.ac);
 
         assert_eq!(vm.registers.ac, 1 << i);
