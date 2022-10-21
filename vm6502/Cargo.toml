@@ -17,14 +17,20 @@ rand = "0.8.5"
 crate-type = ["rlib"]
 
 [features]
-default = ["check_heap_bounds"]
+default = ["check_heap_bounds", "external_exception_on_null_heap"]
+
 
 # Debug features
-full_debug_printing = ["show_vm_post_op", "debug_printing", "show_test_debug"]
-debug_printing = ["show_relative_offset", "show_mode", "show_status", "short_printing"]
-short_printing = ["show_vm_instr", "show_vm_instr", "show_vm_tick_arms", "show_ticked_instrs"]
-pretty_printing = ["ops_only"]
+## Useful features.
+# For using with cargo test to turn off test printing.
+show_test_debug = []
 ops_only = ["show_ticked_instrs"]
+pretty_printing = ["ops_only"]
+## Debug packs
+full_debug_printing = ["show_vm_post_op", "debug_printing", "show_test_debug"]
+debug_printing = ["show_run_time","show_relative_offset", "show_mode", "show_status", "short_printing"]
+short_printing = ["show_vm_instr", "show_vm_instr", "show_vm_tick_arms", "show_ticked_instrs"]
+## Debug printing flags
 show_vm_instr = []
 show_ticked_instrs = []
 show_vm_tick_arms = []
@@ -36,9 +42,14 @@ show_status_get = []
 show_relative_offset =[]
 show_fetched = []
 show_vm_instr_tick_match = []
+
+# For enabling more strict constraints to passthrough the virtual machine's errors to the rust compiler.
 vm_errors = ["passthrough_failure"]
-
-show_test_debug = []
-
 passthrough_failure = []
+
 check_heap_bounds = []
+
+external_exception_on_null_heap = []
+
+# Printing/Package features
+show_run_time = []

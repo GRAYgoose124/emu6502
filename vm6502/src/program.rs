@@ -22,7 +22,7 @@ pub trait ProgramController {
     fn execute(&mut self) -> u64;
 
     /// Run the internally set program at `offset` for `duration`.
-    fn run(&mut self, duration: Duration) -> u64;
+    fn run(&mut self, duration: Duration) -> (u64, Duration);
 
     /// Fill the stack with ops.
     fn fill_stack(&mut self, ops: Vec<u8>);
@@ -65,12 +65,31 @@ impl ProgramController for VirtualMachine {
     }
 
     /// Run the internally set program for `duration` time, returning the number of cycles executed.
-    fn run(&mut self, duration: Duration) -> u64 {
+    fn run(&mut self, duration: Duration) -> (u64, Duration) {
+        // Save cycles for delta.
         let old_cycles = self.cycles;
+        // For counting strings of null bytes. For now 0x04 bytes buffer program ends.
+        #[cfg(feature = "external_exception_on_null_heap")]
+        let mut null_counter = 0;
+
         let start = Instant::now();
         while start.elapsed() < duration && self.halted == false {
             if self.bounds_check(self.registers.pc + 1) {
                 self.step();
+
+                #[cfg(feature = "external_exception_on_null_heap")]
+                if self.get_heap(0) == 0x00 {
+                    null_counter += 1;
+                    // Lets only tolerate reading 4 empty bytes
+                    if null_counter > 0x04 {
+                        println!("\n\t -- Null counter exceeded - exiting without halting. -- ");
+
+                        break;
+                    }
+                } else {
+                    // Reset the counter if we read a non-null byte.
+                    null_counter = 0;
+                }
             } else {
                 #[cfg(feature = "debug_printing")]
                 println!("PC out of bounds! Halting.");
@@ -79,7 +98,7 @@ impl ProgramController for VirtualMachine {
             }
         }
 
-        self.cycles - old_cycles
+        (self.cycles - old_cycles, start.elapsed())
     }
 
     /// Resets the total machine state.

@@ -22,11 +22,8 @@ mod vm_macros {
     #[macro_export]
     macro_rules! check_page_cross {
         ($vm:expr, $new_pc:expr) => {
-            if $new_pc & 0xFF00 != $vm.registers.pc & 0xFF00 {
-                true
-            } else {
-                false
-            }
+            // We're comparing the page bytes, and don't care about the lower bytes.
+            $new_pc & 0xFF00 != $vm.registers.pc & 0xFF00
         };
     }
 }
