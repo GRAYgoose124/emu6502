@@ -10,8 +10,11 @@ pub mod prelude {
 ///
 /// This is placed in a separate trait due to the inherent number of instructions.
 pub trait Instructions {
+    /// Add with carry
     fn adc(&mut self);
+    /// Logical AND
     fn and(&mut self);
+    /// Arithmetic shift left
     fn asl(&mut self);
 
     // Conditional instructions
@@ -177,15 +180,15 @@ impl Instructions for VirtualMachine {
         self.relative_jump(offset, self.get_status(Status::Overflow));
     }
 
-    fn bit(&mut self) {
-        // todo!();
-    }
-
     fn bmi(&mut self, offset: u8) {
         #[cfg(feature = "show_vm_instr")]
         println!("\t\tBMI: 0x{:02X}", offset);
 
         self.relative_jump(offset, self.get_status(Status::Negative));
+    }
+
+    fn bit(&mut self) {
+        // todo!();
     }
 
     fn brk(&mut self) {}
@@ -281,19 +284,23 @@ impl Instructions for VirtualMachine {
     }
 
     fn pha(&mut self) {
-        // todo!();
+        self.push(self.registers.ac);
     }
 
     fn php(&mut self) {
-        // todo!();
+        self.push(self.registers.sr);
     }
 
     fn pla(&mut self) {
-        // todo!();
+        let sts = self.pop();
+        self.registers.ac = sts;
+        self.set_status(Status::Zero, sts == 0);
+        self.set_status(Status::Negative, sts & 0x80 != 0);
     }
 
     fn plp(&mut self) {
-        // todo!();
+        let sts = self.pop();
+        self.registers.sr = sts;
     }
 
     fn rol(&mut self) {
@@ -337,30 +344,56 @@ impl Instructions for VirtualMachine {
     }
 
     fn sty(&mut self) {
-        // todo!();
+        match self.addr_mode {
+            Mode::ZeroPage => {
+                let addr = self.fetch() as usize;
+                // Only 0x00 - 0xFF, self.fetch returns u8 so this is guaranteed.
+                self.flatmap[addr] = self.registers.y;
+            }
+            Mode::ZeroPageX => {
+                let addr = (self.fetch() as usize + self.registers.x as usize) & 0xFF;
+                self.flatmap[addr] = self.registers.y;
+            }
+            Mode::Absolute => {
+                let addr = self.fetch();
+                // TODO: change fetch to return raw addr, maybe call it fetch_addr.
+                self.flatmap[addr as usize] = self.registers.y;
+            }
+            _ => panic!("Invalid addressing mode for STY"),
+        }
     }
 
     fn tax(&mut self) {
-        // todo!();
+        self.registers.x = self.registers.ac;
+        self.set_status(Status::Zero, self.registers.x == 0);
+        self.set_status(Status::Negative, self.registers.x & 0x80 != 0);
     }
 
     fn tay(&mut self) {
-        // todo!();
+        self.registers.y = self.registers.ac;
+        self.set_status(Status::Zero, self.registers.y == 0);
+        self.set_status(Status::Negative, self.registers.y & 0x80 != 0);
     }
 
     fn tsx(&mut self) {
-        // todo!();
+        self.registers.x = self.registers.sp;
+        self.set_status(Status::Zero, self.registers.x == 0);
+        self.set_status(Status::Negative, self.registers.x & 0x80 != 0);
     }
 
     fn txa(&mut self) {
-        // todo!();
+        self.registers.ac = self.registers.x;
+        self.set_status(Status::Zero, self.registers.ac == 0);
+        self.set_status(Status::Negative, self.registers.ac & 0x80 != 0);
     }
 
     fn txs(&mut self) {
-        // todo!();
+        self.registers.sp = self.registers.x;
     }
 
     fn tya(&mut self) {
-        // todo!();
+        self.registers.ac = self.registers.y;
+        self.set_status(Status::Zero, self.registers.ac == 0);
+        self.set_status(Status::Negative, self.registers.ac & 0x80 != 0);
     }
 }

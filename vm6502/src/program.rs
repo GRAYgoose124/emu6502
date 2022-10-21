@@ -102,7 +102,7 @@ impl ProgramController for VirtualMachine {
             };
 
             self.registers.ac = *byte;
-            self.push();
+            self.push(self.registers.ac);
         }
     }
 }

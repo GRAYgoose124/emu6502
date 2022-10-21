@@ -12,8 +12,7 @@ fn test_vm_stack() {
 
     // Push backwards because the stack grows from 0x01FF to 0x100.
     for i in 0x0FF..0 {
-        vm.registers.ac = test[i];
-        vm.push();
+        vm.push(test[i]);
     }
 
     eprintln!("Stack: {:?}", vm);
@@ -37,8 +36,7 @@ fn test_vm_write_stack() {
     let test: [u8; 0x0FF] = test_vec.into_inner().unwrap();
 
     for i in 0..0x0FF {
-        vm.registers.ac = test[i];
-        vm.push();
+        vm.push(test[i]);
     }
 
     // TODO: For some reason stack isn't being written properly.
@@ -64,8 +62,7 @@ fn test_vm_stack_contig() {
 
     // Push backwards because the stack grows from 0x01FF to 0x100.
     for i in 0..0x0FF {
-        vm.registers.ac = test[i];
-        vm.push();
+        vm.push(test[i]);
     }
 
     eprintln!("vm {:?}", vm);
