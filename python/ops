@@ -1,0 +1,57 @@
+#!/bin/python3
+import argparse
+import columnize
+
+from gen_data import *
+from num_tables import *
+from num_utils import *
+
+
+def parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("ops", type=str, nargs="*")
+
+    args = parser.parse_args()
+    if args.ops is None:
+        print("No ops given")
+        exit()
+
+    return args
+
+
+def get_opcode(op: str):
+    codes = []
+    for name, ops in all_valid_ops.items():
+        if op.upper() == name:
+            codes.append("\n".join(["\t".join((f"0x{o[0]:02X}", o[1])) for o in ops]))
+    return codes
+
+
+def get_name(op: int):
+    for name, ops in all_valid_ops.items():
+        for o in ops:
+            if op == o[0]:
+                return name
+
+
+def print_opcode(op):
+    print(f"--\t{op}\t--", "\n", "".join(get_opcode(op)), "\n", sep="")
+
+
+def main():
+    args = parser()
+
+    ops = args.ops
+    # Iterate over variable arg list.
+    for op in ops:
+        t = num_conversion(op)
+        if t:
+            op = get_name(t)
+        # If op is a name, like "BRK"
+        print_opcode(op)
+
+
+
+
+if __name__ == "__main__":
+    main()
