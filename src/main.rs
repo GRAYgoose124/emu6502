@@ -11,4 +11,6 @@ fn main() {
 
     let cycles = vm.run(Duration::from_micros(10000));
     println!("Cycles over 10000us: {}", cycles);
+
+    println!("Final VM state: {:?}", vm);
 }
