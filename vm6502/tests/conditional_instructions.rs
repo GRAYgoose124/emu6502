@@ -69,7 +69,8 @@ fn bcc_paging_cover0xfe() {
     );
     assert_eq!(vm.registers.pc, slide as u16);
 
-    for i in 0..=0xFF {
+    // Can we run this inclusively?
+    for i in 0..0xFF {
         eprintln!("|page 0x{:02X}", i);
         vm.insert_program(slide as u16, prog);
         vm.step();

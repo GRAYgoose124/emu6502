@@ -23,21 +23,15 @@ fn adc_imd() {
 fn and_imd() {
     let mut vm = VirtualMachine::new();
     let offset = 0x0000;
-    vm.insert_program(offset, "29FF2900");
+    vm.insert_program(offset, "29FF29002900");
     vm.registers.pc = offset as u16;
-    vm.registers.ac = 0x0F;
-    vm.step();
+    vm.registers.ac = 0xFF;
 
-    assert_eq!(vm.registers.ac, 0x0F);
-    assert_eq!(vm.registers.sr & status!(Status::Zero), 0);
+    vm.step();
+    assert_eq!(vm.registers.ac, 0xFF);
 
     vm.step();
     assert_eq!(vm.registers.ac, 0x00);
-    eprintln!("sr: 0x{:08b}", vm.registers.sr);
-    assert_eq!(
-        vm.registers.sr & status!(Status::Zero),
-        status!(Status::Zero)
-    );
 }
 
 #[test]

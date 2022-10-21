@@ -337,7 +337,7 @@ impl InstructionController for VirtualMachine {
     #[bitmatch]
     fn step(&mut self) -> u64 {
         // Get current op
-        let op = self.flatmap[self.registers.pc as usize + self.heap_bounds.0];
+        let op = self.get_heap(0);
         // Set internal mode.
         let m = self.mode(op);
 
@@ -348,8 +348,8 @@ impl InstructionController for VirtualMachine {
         self.addr_mode = m;
 
         // Push the current program counter to the stack for a relative jump.
-        // This is for precedures, move.
-        if self.addr_mode == Mode::Relative {
+        // This is for procedures, move.
+        /*if self.addr_mode == Mode::Relative {
             let old_ac = self.registers.ac;
             let bytes = self.registers.pc.to_be_bytes();
 
@@ -359,7 +359,7 @@ impl InstructionController for VirtualMachine {
             self.push();
 
             self.registers.ac = old_ac;
-        }
+        }*/
 
         #[allow(unused_variables)]
         #[bitmatch]
@@ -690,11 +690,12 @@ impl InstructionController for VirtualMachine {
         #[cfg(feature = "show_vm_post_op")]
         println!("{:?}", self);
 
-        // Skip the tick increment for relative branch instructions.
+        // This should be counting the consumed ops.
+        self.cycles += 1;
+
+        // Increment PC for the OP fetched.
         if self.addr_mode != Mode::Relative {
             self.registers.pc += 1;
-        } else {
-            //  TODO: count relative cycles, with page bound crosses.
         }
 
         // TODO: This should be updated (along with the PC) by the above commands.

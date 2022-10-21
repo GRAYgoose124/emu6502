@@ -18,8 +18,10 @@ pub trait ProgramController {
     fn insert_program(&mut self, offset: u16, prog: &str);
     fn set_program(&mut self, offset: u16, prog: &str);
 
-    /// TODO meta memory controller/allocator.
-    /// Run the internally set program.
+    /// Run the internal program.
+    fn execute(&mut self) -> u64;
+
+    /// Run the internally set program at `offset` for `duration`.
     fn run(&mut self, duration: Duration) -> u64;
 
     /// Fill the stack with ops.
@@ -51,12 +53,30 @@ impl ProgramController for VirtualMachine {
         self.registers.pc = offset as u16;
     }
 
+    /// Run the internally set program. Intended API for running programs.
+    fn execute(&mut self) -> u64 {
+        let old_cycles = self.cycles;
+
+        while self.halted == false {
+            self.step();
+        }
+
+        self.cycles - old_cycles
+    }
+
     /// Run the internally set program for `duration` time, returning the number of cycles executed.
     fn run(&mut self, duration: Duration) -> u64 {
         let old_cycles = self.cycles;
         let start = Instant::now();
-        while start.elapsed() < duration {
-            self.step();
+        while start.elapsed() < duration && self.halted == false {
+            if self.bounds_check(self.registers.pc + 1) {
+                self.step();
+            } else {
+                #[cfg(feature = "debug_printing")]
+                println!("PC out of bounds! Halting.");
+
+                self.halted = true;
+            }
         }
 
         self.cycles - old_cycles
@@ -70,6 +90,7 @@ impl ProgramController for VirtualMachine {
 
         self.registers = Registers::new();
         self.cycles = 0;
+        self.halted = false;
     }
 
     // TODO: move to helpers? macro?

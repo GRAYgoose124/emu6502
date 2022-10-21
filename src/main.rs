@@ -1,40 +1,14 @@
 /// Frontend for vm6502.
-///
-///
+use std::time::Duration;
+
 use vm6502::prelude::*;
-use vm6502::status;
 
 fn main() {
     let mut vm = VirtualMachine::new();
 
-    let prog = "69F00A290069FF9002";
-    // vm.insert_program(vm.vheap_bounds.1 - (prog.len() / 2), prog);
+    let prog = "69016901690169016901690169016901690169016901690169016901690169016901690169016901690169016901690169016901690169016901";
     vm.insert_program(vm.vheap_bounds.0 as u16, prog);
-    println!("Running program: {}", prog);
 
-    vm.registers.ac = 0x0F;
-    debug_assert_eq!(vm.registers.pc, 0x0000);
-    debug_assert_eq!(vm.registers.ac, 0x0F);
-
-    vm.step();
-    debug_assert_eq!(vm.registers.ac, 0xFF);
-
-    vm.step();
-    debug_assert_eq!(vm.registers.ac, 0xFE);
-
-    vm.step();
-    debug_assert_eq!(vm.registers.ac, 0x00);
-
-    vm.registers.ac = 0x01;
-    vm.step();
-    debug_assert_eq!(vm.registers.ac, 0x00);
-    debug_assert_eq!(vm.registers.sr & status!(Status::Carry), 1);
-
-    vm.registers.sr &= !status!(Status::Carry);
-    vm.step();
-
-    vm.reset();
-    vm.insert_program(vm.vheap_bounds.0 as u16, "90FF");
-    vm.step();
-    assert_eq!(vm.registers.pc, 0xFF);
+    let cycles = vm.run(Duration::from_micros(10000));
+    println!("Cycles over 10000us: {}", cycles);
 }

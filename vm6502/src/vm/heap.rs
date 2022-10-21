@@ -59,10 +59,8 @@ impl HeapInterface for VirtualMachine {
         let new_pc = (self.registers.pc & 0x00FF) | (virt_addr as u16) << 8;
         #[cfg(feature = "check_heap_bounds")]
         if !self.bounds_check(new_pc) {
-            println!("Crossed virtual heap bounds!");
-        } else if !self.bounds_check(new_pc) {
-            println!("Crossed heap bounds!");
-        }
+            println!("Crossed virtual heap bounds!")
+        };
 
         self.registers.pc = new_pc;
     }

@@ -20,7 +20,7 @@ crate-type = ["rlib"]
 default = ["check_heap_bounds"]
 
 # Debug features
-full_debug_printing = ["show_vm_post_op", "debug_printing"]
+full_debug_printing = ["show_vm_post_op", "debug_printing", "show_test_debug"]
 debug_printing = ["show_relative_offset", "show_mode", "show_status", "short_printing"]
 short_printing = ["show_vm_instr", "show_vm_instr", "show_vm_tick_arms", "show_ticked_instrs"]
 pretty_printing = ["ops_only"]
@@ -37,6 +37,8 @@ show_relative_offset =[]
 show_fetched = []
 show_vm_instr_tick_match = []
 vm_errors = ["passthrough_failure"]
-passthrough_failure = []
 
+show_test_debug = []
+
+passthrough_failure = []
 check_heap_bounds = []
