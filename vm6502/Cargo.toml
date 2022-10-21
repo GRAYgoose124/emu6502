@@ -17,9 +17,14 @@ rand = "0.8.5"
 crate-type = ["rlib"]
 
 [features]
-default = []
-debug_printing = ["show_relative_offset", "show_vm_post_op", "show_mode", "show_status", "shortd_printing"]
-shortd_printing = ["show_vm_instr", "show_vm_instr", "show_vm_tick_arms", "show_ticked_instrs"]
+default = ["check_heap_bounds"]
+
+# Debug features
+full_debug_printing = ["show_vm_post_op", "debug_printing"]
+debug_printing = ["show_relative_offset", "show_mode", "show_status", "short_printing"]
+short_printing = ["show_vm_instr", "show_vm_instr", "show_vm_tick_arms", "show_ticked_instrs", "vm_errors"]
+pretty_printing = ["ops_only"]
+ops_only = ["show_ticked_instrs"]
 show_vm_instr = []
 show_ticked_instrs = []
 show_vm_tick_arms = []
@@ -31,3 +36,7 @@ show_status_get = []
 show_relative_offset =[]
 show_fetched = []
 show_vm_instr_tick_match = []
+vm_errors = ["passthrough_failure"]
+passthrough_failure = []
+
+check_heap_bounds = []

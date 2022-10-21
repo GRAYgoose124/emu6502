@@ -122,32 +122,32 @@ impl InstructionController for VirtualMachine {
                 // Todo can we move increments to get heap? We have to fix Relative to be
                 // parallel. I don't think so, because indirect fetching.
                 self.registers.pc += 1;
-                let ll = self.get_heap(0);
+                let ll = self.get_heap(0) as usize;
                 self.registers.pc += 1;
-                let hh = self.get_heap(0);
+                let hh = self.get_heap(0) as usize;
 
-                let offset = (hh as usize) << 8 | ll as usize;
-                self.get_heap(offset)
+                let offset: usize = (hh << 2) | ll;
+                self.get_heap(offset as u16)
             }
             // OPC $LLHH,X
             Mode::AbsoluteX => {
                 self.registers.pc += 1;
-                let ll = self.get_heap(0);
+                let ll = self.get_heap(0) as usize;
                 self.registers.pc += 1;
-                let hh = self.get_heap(0);
+                let hh = self.get_heap(0) as usize;
 
-                let offset = (hh as usize) << 8 | ll as usize + self.registers.x as usize;
-                self.get_heap(offset)
+                let offset = (hh << 2) | ll + self.registers.x as usize;
+                self.get_heap(offset as u16)
             }
             // OPC $LLHH,Y
             Mode::AbsoluteY => {
                 self.registers.pc += 1;
-                let ll = self.get_heap(0);
+                let ll = self.get_heap(0) as usize;
                 self.registers.pc += 1;
-                let hh = self.get_heap(0);
+                let hh = self.get_heap(0) as usize;
 
-                let offset = (hh as usize) << 8 | ll as usize + self.registers.y as usize;
-                self.get_heap(offset)
+                let offset = (hh << 2) | ll + self.registers.y as usize;
+                self.get_heap(offset as u16)
             }
             // OPC #$BB
             Mode::Immediate => {
@@ -159,12 +159,12 @@ impl InstructionController for VirtualMachine {
             // OPC ($LLHH)
             Mode::Indirect => {
                 self.registers.pc += 1;
-                let ll = self.get_heap(0);
+                let ll = self.get_heap(0) as usize;
                 self.registers.pc += 1;
-                let hh = self.get_heap(0);
+                let hh = self.get_heap(0) as usize;
 
-                let offset = (hh as usize) << 8 | ll as usize;
-                self.get_heap(offset)
+                let offset = (hh << 2) | ll;
+                self.get_heap(offset as u16)
             }
             // OPC ($LL, X)
             // operand is zeropage address; effective address is word in (LL + X, LL + X + 1),
@@ -172,11 +172,11 @@ impl InstructionController for VirtualMachine {
             Mode::IndirectX => {
                 self.registers.pc += 1;
                 let ll = self.get_heap(0);
-                let ell = self.get_heap(ll as usize + self.registers.x as usize);
-                let ehh = self.get_heap(ll as usize + self.registers.x as usize + 1);
+                let ell = self.get_heap((ll + self.registers.x) as u16) as usize;
+                let ehh = self.get_heap((ll + self.registers.x + 1) as u16) as usize;
 
-                let offset = (ehh as usize) << 8 | ell as usize;
-                self.get_heap(offset)
+                let offset = (ehh << 2) | ell;
+                self.get_heap(offset as u16)
             }
             // OPC ($LL), Y
             // operand is zeropage address; effective address is word in (LL, LL + 1)
@@ -185,11 +185,11 @@ impl InstructionController for VirtualMachine {
             Mode::IndirectY => {
                 self.registers.pc += 1;
                 let ll = self.get_heap(0);
-                let ell = self.get_heap(ll as usize);
-                let ehh = self.get_heap(ll as usize);
+                let ell = self.get_heap(ll as u16);
+                let ehh = self.get_heap(ll as u16);
 
-                let offset = (ehh as usize) << 8 | ell as usize + self.registers.y as usize;
-                self.get_heap(offset)
+                let offset = (ehh << 2) | ell + self.registers.y;
+                self.get_heap(offset as u16)
             }
             // OPC $BB
             Mode::Relative => {
@@ -201,19 +201,19 @@ impl InstructionController for VirtualMachine {
             Mode::ZeroPage => {
                 self.registers.pc += 1;
                 let ll = self.get_heap(0);
-                self.get_heap(ll as usize)
+                self.get_heap(ll as u16)
             }
             // OPC $LL, X
             Mode::ZeroPageX => {
                 self.registers.pc += 1;
                 let ll = self.get_heap(0);
-                self.get_heap(ll as usize + self.registers.x as usize)
+                self.get_heap((ll + self.registers.x).into())
             }
             // OPC $LL, Y
             Mode::ZeroPageY => {
                 self.registers.pc += 1;
                 let ll = self.get_heap(0);
-                self.get_heap(ll as usize + self.registers.y as usize)
+                self.get_heap((ll + self.registers.y).into())
             }
         };
 

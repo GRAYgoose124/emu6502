@@ -8,9 +8,10 @@ fn main() {
     let mut vm = VirtualMachine::new();
 
     let prog = "69F00A290069FF9002";
-
     // vm.insert_program(vm.vheap_bounds.1 - (prog.len() / 2), prog);
     vm.insert_program(vm.vheap_bounds.0, prog);
+    println!("Running program: {}", prog);
+
     vm.registers.ac = 0x0F;
     debug_assert_eq!(vm.registers.pc, 0x0000);
     debug_assert_eq!(vm.registers.ac, 0x0F);

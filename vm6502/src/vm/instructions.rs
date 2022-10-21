@@ -188,9 +188,7 @@ impl Instructions for VirtualMachine {
         self.relative_jump(offset, self.get_status(Status::Negative));
     }
 
-    fn brk(&mut self) {
-        // todo!();
-    }
+    fn brk(&mut self) {}
 
     fn clc(&mut self) {
         // todo!();

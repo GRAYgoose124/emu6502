@@ -15,4 +15,7 @@ rand = "0.8.5"
 path = "vm6502"
 
 [features]
+defaults = ["vm6502/pretty_printing"]
+
 debug_vm = ["vm6502/debug_printing"]
+pretty_vm = ["vm6502/pretty_printing"]
