@@ -34,21 +34,6 @@ fn and_imd() {
     assert_eq!(vm.registers.ac, 0x00);
 }
 
-#[test]
-fn asl_simple() {
-    let mut vm = VirtualMachine::new();
-    let prog = "0A0A";
-    vm.registers.ac = 0xFF;
-
-    vm.insert_program(vm.vheap_bounds.0 as u16, prog);
-    vm.step();
-    assert_eq!(vm.registers.ac, 0xFE);
-    assert_eq!(vm.registers.sr & status!(Status::Carry), 1);
-
-    vm.step();
-    assert_eq!(vm.registers.ac, 0xFC);
-    assert_eq!(vm.registers.sr & status!(Status::Carry), 1);
-}
 
 #[test]
 fn asl_cover() {
