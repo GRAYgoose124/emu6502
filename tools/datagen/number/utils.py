@@ -38,8 +38,11 @@ def format_conversion(n: str, sep=" "):
     return format_number(value)
         
 
-def format_number(value, sep=" "):
+def format_number(value, sep=" ", width=None):
     try:
-        return f"{d(value)}{sep}{h(value)}{sep}{b(value)}"
+        if width is None:
+            return f"{d(value)}{sep}{h(value)}{sep}{b(value)}"
+        else:
+            return f"{d(value):{width}}{sep}{h(value):{width}}{sep}{b(value):{width}}"
     except ValueError:
         return f"{value}"

@@ -11,4 +11,8 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 
+[project.scripts]
+anima6502 = "anima:main"
 
+[tool.maturin]
+python-source = "python"

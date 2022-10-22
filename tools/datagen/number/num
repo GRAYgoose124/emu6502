@@ -27,8 +27,8 @@ def handle_rpn(args):
         print(f"RPN: {' '.join(args)}\nResult:\t{results[0]}\n")
 
         for i, step in enumerate(results[1]):
-            print(f"{i}. {format_conversion(step[0])}")
-            print(f"\t{step[0]} {step[1]} {step[2]} = {step[3]}")
+            print(f"{i}.\t{format_conversion(step[0], 16)} {step[1]}\n\t{format_conversion(step[2], 16)} =\n\t{format_conversion(step[3], 16)}\n")
+      
         exit()
 
 

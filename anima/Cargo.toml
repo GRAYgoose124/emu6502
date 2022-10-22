@@ -13,3 +13,8 @@ pyo3 = { version = "0.17.1", features = ["extension-module"] }
 
 [dependencies.vm6502]
 path = "../vm6502"
+
+# TODO: If we could get maturin to compile the script front end, that'd be great.
+[package.metadata.maturin]
+python-source = "python"
+name = "anima._anima"
