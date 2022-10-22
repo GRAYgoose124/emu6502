@@ -242,29 +242,12 @@ impl Instructions for VirtualMachine {
     fn abs_zp_acc_op(&mut self, operation: fn(u8) -> u8) -> u8 {
         let data = self.fetch();
 
-        let carried = |f: u8| f & 0x01 != 0;
-
         // Performs an operation and moves it to destination.
-        let doit = |d: &mut u8| -> (u8, bool) {
-            let r = operation(*d);
-            let c = carried(r);
-            *d = r;
-            (r, c)
-        };
+        let result = self.apply(data as u16, operation);
 
-        let (r, c) = match self.addr_mode {
-            Mode::Accumulator => doit(&mut self.registers.ac),
-            Mode::ZeroPage => doit(&mut self.flatmap[data as usize]),
-            Mode::ZeroPageX => doit(&mut self.flatmap[(data + self.registers.x) as usize]),
-            Mode::Absolute => doit(&mut self.flatmap[data as usize]),
-            Mode::AbsoluteX => doit(&mut self.flatmap[(data + self.registers.x) as usize]),
-
-            _ => panic!("Invalid addressing mode for ROL"),
-        };
-
-        self.set_status(Status::Carry, c);
-        self.set_status(Status::Zero, r == 0);
-        self.set_status(Status::Negative, r & 0x80 != 0);
+        self.set_status(Status::Carry, result & 0x01 != 0);
+        self.set_status(Status::Zero, result == 0);
+        self.set_status(Status::Negative, result & 0x80 != 0);
 
         data
     }
@@ -279,18 +262,9 @@ impl Instructions for VirtualMachine {
 
     fn rol(&mut self) {
         let data = self.abs_zp_acc_op(|d| d << 1);
-        let sts = self.get_status(Status::Carry);
-        if sts {
-            match self.addr_mode {
-                Mode::Accumulator => self.registers.ac |= 0x01,
-                Mode::ZeroPage => self.flatmap[data as usize] |= 0x01,
-                Mode::ZeroPageX => self.flatmap[(data + self.registers.x) as usize] |= 0x01,
-                Mode::Absolute => self.flatmap[data as usize] |= 0x01,
-                Mode::AbsoluteX => self.flatmap[(data + self.registers.x) as usize] |= 0x01,
-
-                _ => panic!("Invalid addressing mode for ROL"),
-            }
-        }
+        if self.get_status(Status::Carry) {
+            self.apply(data as u16, |d| d | 0x01);
+        };
     }
 
     fn ror(&mut self) {
@@ -306,7 +280,7 @@ impl Instructions for VirtualMachine {
 
                 _ => panic!("Invalid addressing mode for ROL"),
             }
-        }
+        };
     }
 
     // Jumping/Procedure OPs

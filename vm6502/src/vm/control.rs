@@ -58,6 +58,7 @@ pub trait InstructionController {
     fn mode(&mut self, op: u8) -> Mode;
     fn fetch(&mut self) -> u8;
     fn fetch_byte(&mut self) -> u8;
+    fn apply(&mut self, address: u16, operation: fn(u8) -> u8) -> u8;
 
     //
     fn relative_jump(&mut self, offset: u8, cond: bool);
@@ -108,6 +109,46 @@ pub trait InstructionController {
 /// assert_eq!(fetched, byte);
 /// ```
 impl InstructionController for VirtualMachine {
+    // This can probably be combined with fetch byte in some way.
+    fn apply(&mut self, address: u16, operation: fn(u8) -> u8) -> u8 {
+        let doit = |d: &mut u8| -> u8 {
+            let r = operation(*d);
+            *d = r;
+            r
+        };
+
+        let result = match self.addr_mode {
+            Mode::Accumulator => doit(&mut self.registers.ac),
+            Mode::ZeroPage => doit(&mut self.flatmap[address as usize]),
+            Mode::ZeroPageX => {
+                doit(&mut self.flatmap[address as usize + self.registers.x as usize])
+            }
+            Mode::Absolute => doit(&mut self.flatmap[address as usize]),
+            Mode::AbsoluteX => {
+                doit(&mut self.flatmap[address as usize + self.registers.x as usize])
+            }
+            Mode::AbsoluteY => {
+                doit(&mut self.flatmap[address as usize + self.registers.y as usize])
+            }
+            Mode::Indirect => doit(&mut self.flatmap[address as usize]),
+            Mode::IndirectX => {
+                doit(&mut self.flatmap[address as usize + self.registers.x as usize])
+            }
+            Mode::IndirectY => {
+                doit(&mut self.flatmap[address as usize + self.registers.y as usize])
+            }
+            Mode::Immediate => doit(&mut self.flatmap[address as usize]),
+            Mode::Relative => doit(&mut self.flatmap[address as usize]),
+            Mode::Implied => doit(&mut self.flatmap[address as usize]),
+            Mode::ZeroPageY => {
+                doit(&mut self.flatmap[address as usize + self.registers.y as usize])
+            }
+        };
+
+        result
+    }
+
+    /// Fetch the next byte from the program counter.
     fn fetch(&mut self) -> u8 {
         match self.addr_mode {
             Mode::Absolute => {
@@ -145,7 +186,6 @@ impl InstructionController for VirtualMachine {
         }
     }
 
-    /// Fetch the next byte from memory using the current address mode and program counter.
     fn fetch_byte(&mut self) -> u8 {
         #[cfg(feature = "show_mode")]
         println!("\n\tfetch mode: {:?}", self.addr_mode);
