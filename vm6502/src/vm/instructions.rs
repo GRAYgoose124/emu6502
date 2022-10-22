@@ -84,6 +84,8 @@ pub trait Instructions {
 }
 
 impl Instructions for VirtualMachine {
+    fn brk(&mut self) {}
+
     fn adc(&mut self) {
         let value = self.fetch(); // Fetch is directed by the internal mode.
 
@@ -158,58 +160,41 @@ impl Instructions for VirtualMachine {
         self.relative_jump(offset, self.get_status(Status::Negative));
     }
 
-    fn bit(&mut self) {
-        // todo!();
-    }
-
-    fn brk(&mut self) {}
-
-    fn clc(&mut self) {
-        // todo!();
-    }
-
-    fn cld(&mut self) {
-        // todo!();
-    }
-
-    fn cli(&mut self) {
-        // todo!();
-    }
-
-    fn clv(&mut self) {
-        // todo!();
-    }
-
-    fn cmp(&mut self) {
-        // todo!();
-    }
-
-    fn cpx(&mut self) {
-        // todo!();
-    }
-
-    fn cpy(&mut self) {
-        // todo!();
-    }
-
     // Incrementing OPs.
-    fn dec(&mut self) {}
+    fn dec(&mut self) {
+        let addr = self.fetch();
+        let operation = |value: u8| value.wrapping_sub(1);
+        self.apply(addr as u16, operation);
+    }
 
-    fn dex(&mut self) {}
+    fn inc(&mut self) {
+        let addr = self.fetch();
+        let operation = |value: u8| value.wrapping_add(1);
+        self.apply(addr as u16, operation);
+    }
+
+    fn dex(&mut self) {
+        self.registers.x = self.registers.x.wrapping_sub(1);
+        self.set_status(Status::Zero, self.registers.x == 0);
+        self.set_status(Status::Negative, self.registers.x & 0x80 != 0);
+    }
 
     fn dey(&mut self) {
-        // todo!();
-    }
-    fn inc(&mut self) {
-        // todo!();
+        self.registers.y = self.registers.y.wrapping_sub(1);
+        self.set_status(Status::Zero, self.registers.y == 0);
+        self.set_status(Status::Negative, self.registers.y & 0x80 != 0);
     }
 
     fn inx(&mut self) {
-        // todo!();
+        self.registers.x = self.registers.x.wrapping_add(1);
+        self.set_status(Status::Zero, self.registers.x == 0);
+        self.set_status(Status::Negative, self.registers.x & 0x80 != 0);
     }
 
     fn iny(&mut self) {
-        // todo!();
+        self.registers.y = self.registers.y.wrapping_add(1);
+        self.set_status(Status::Zero, self.registers.y == 0);
+        self.set_status(Status::Negative, self.registers.y & 0x80 != 0);
     }
 
     /// Load Instructions;
@@ -235,6 +220,43 @@ impl Instructions for VirtualMachine {
 
         self.set_status(Status::Zero, data == 0);
         self.set_status(Status::Negative, data & 0x80 != 0);
+    }
+
+    // Comparison OPs
+    fn bit(&mut self) {
+        let value = self.fetch();
+        let result = self.registers.ac & value;
+
+        self.set_status(Status::Zero, result == 0);
+        self.set_status(Status::Negative, value & 0x80 != 0);
+        self.set_status(Status::Overflow, value & 0x40 != 0);
+    }
+
+    fn cmp(&mut self) {
+        let value = self.fetch();
+        let result = self.registers.ac as u16 - value as u16;
+
+        self.set_status(Status::Carry, result < 0x100);
+        self.set_status(Status::Zero, result == 0);
+        self.set_status(Status::Negative, result & 0x80 != 0);
+    }
+
+    fn cpx(&mut self) {
+        let value = self.fetch();
+        let result = self.registers.x as u16 - value as u16;
+
+        self.set_status(Status::Carry, result < 0x100);
+        self.set_status(Status::Zero, result == 0);
+        self.set_status(Status::Negative, result & 0x80 != 0);
+    }
+
+    fn cpy(&mut self) {
+        let value = self.fetch();
+        let result = self.registers.y as u16 - value as u16;
+
+        self.set_status(Status::Carry, result < 0x100);
+        self.set_status(Status::Zero, result == 0);
+        self.set_status(Status::Negative, result & 0x80 != 0);
     }
 
     // TODO: Move to separate mod, general_instructions?
@@ -299,6 +321,22 @@ impl Instructions for VirtualMachine {
     fn rts(&mut self) {}
 
     // Flag set OPs
+    fn clc(&mut self) {
+        self.set_status(Status::Carry, false);
+    }
+
+    fn cld(&mut self) {
+        self.set_status(Status::Decimal, false);
+    }
+
+    fn cli(&mut self) {
+        self.set_status(Status::Interrupt, false);
+    }
+
+    fn clv(&mut self) {
+        self.set_status(Status::Overflow, false);
+    }
+
     fn sec(&mut self) {
         self.set_status(Status::Carry, true);
     }
@@ -316,6 +354,7 @@ impl Instructions for VirtualMachine {
     fn sta(&mut self) {
         let data = self.fetch();
         // TODO: This code duplication can likely be refactored, similarly to ROL/ROR, but more general?
+        // I've made some glaring assumptions about the 6502 that are catching up now.
         match self.addr_mode {
             Mode::ZeroPage => self.flatmap[data as usize] = self.registers.ac,
             Mode::ZeroPageX => self.flatmap[(data + self.registers.x) as usize] = self.registers.ac,
