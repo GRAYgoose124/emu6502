@@ -2,9 +2,9 @@
 import argparse
 import columnize
 
-from gen_data import *
-from num_tables import *
-from num_utils import *
+from number.gen_data import *
+from number.tables import *
+from number.utils import *
 
 
 def parser():

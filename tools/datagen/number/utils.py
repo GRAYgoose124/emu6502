@@ -1,7 +1,11 @@
-from num_tables import *
+from tables import *
 
+def is_num(n):
+    if isinstance(n, int):
+        return "int"
+    if isinstance(n, list):
+        return False
 
-def is_num(n: str):
     if "0x" in n:
         return "hex"
     if "0b" in n:
@@ -21,7 +25,7 @@ def num_conversion(n: str, sep=" "):
     elif t == "int":
         value = int(n)
     else:
-        return
+        return n
 
     return value
 
@@ -35,4 +39,7 @@ def format_conversion(n: str, sep=" "):
         
 
 def format_number(value, sep=" "):
-    return f"{d(value)}{sep}{h(value)}{sep}{b(value)}"
+    try:
+        return f"{d(value)}{sep}{h(value)}{sep}{b(value)}"
+    except ValueError:
+        return f"{value}"

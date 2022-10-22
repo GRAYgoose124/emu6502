@@ -1,0 +1,61 @@
+#!/bin/python3
+import argparse
+import columnize
+
+from utils import *
+from rpn import ops, rpn
+
+
+def parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("num", type=str, nargs="*")
+
+    args = parser.parse_args()
+        
+    return args
+
+
+def handle_rpn(args):
+    is_rpn = False
+    for arg in args:
+        if arg in ops:
+            is_rpn = True
+            break
+
+    if is_rpn:
+        results = rpn(args)
+        print(f"RPN: {' '.join(args)}\nResult:\t{results[0]}\n")
+
+        for i, step in enumerate(results[1]):
+            print(f"{i}. {format_conversion(step[0])}")
+            print(f"\t{step[0]} {step[1]} {step[2]} = {step[3]}")
+        exit()
+
+
+def handle_range_arg(arg):
+    start, end = arg.split("..")
+    start = num_conversion(start)
+    end = num_conversion(end)
+    return list(range(start, end))
+
+
+def main():
+    args = parser()
+
+    if len(args.num):
+        handle_rpn(args.num)
+
+        for num in args.num:
+            if ".." in num:
+                num = handle_range_arg(num)
+
+            if isinstance(num, list):
+                print(columnize.columnize([format_number(n) for n in num], displaywidth=160))
+            elif num not in ops:
+                print("\t", format_conversion(num))
+    else:
+        print(columnize.columnize([f"{n:3}:{n:08b}:{n:02X}" for n in range(0xFF+1)]))
+    
+
+if __name__ == "__main__":
+    main()
