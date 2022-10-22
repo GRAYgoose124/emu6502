@@ -1,14 +1,5 @@
-**/target/*
-*.lock
-TODO
-CHECK
-*.pyc
-output.txt
-
 /target
 
-
-## Maturin added:
 # Byte-compiled / optimized / DLL files
 __pycache__/
 .pytest_cache/

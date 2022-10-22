@@ -1,11 +1,13 @@
 # emu6502
-![t](https://github.com/GRAYgoose124/emu6502/actions/workflows/tests.yml/badge.svg)
+![t](https://github.com/GRAYgoose124/emu6502/actions/workflows/tests.yml/badge.svg)     ![t](https://github.com/GRAYgoose124/emu6502/actions/workflows/anima_tests.yml/badge.svg)
+
+emu6502 is a full 6502 emulation, testing, and debugging suite. !! in construction !!
 
 ## How to use   
-
     git clone git@github.com:GRAYgoose124/emu6502.git
-    cd emu6502
+    cd emu6502/
 
+## Running & building the Rust frontend demo:
 To run the project as a regular binary:
 
     cargo run --features=debug_vm
@@ -15,16 +17,11 @@ Or to build it as a standalone binary and run:
     cargo build --release
     ./target/release/emu65022
 
-To run the virtual cpu tests:
 
-    cargo test -p vm6502
 
-## Features
-`pretty', 'debug', and 'ugly' debugging modes available to emu6502.
+## Sub-crates: 
+### Anima   !! in construction !!
+Anima provides Python bindings for the virtual machine from crate::vm6502.
 
-When testing vm6502, you can enable 'show_test_debug' to see any error outputs.
-
-## References
-[6502 Instruction Set](https://www.masswerk.at/6502/6502_instruction_set.html)
-
-[6502 Addressing Modes](http://www.emulator101.com/6502-addressing-modes.html)
+### vm6502
+As the name suggests, this crate is the core 6502 virtual machine. Currently, if you'd like more information, please generate and check the docs with `cargo docs --open` and direct yourself to the vm6502 crate.
