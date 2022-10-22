@@ -44,24 +44,36 @@ pub struct VirtualMachine {
     #[derivative(Default(value = "Registers::new()"))]
     pub registers: Registers,
     /// The machine memory in a linear layout.
-    #[derivative(Default(value = "BytesMut::zeroed(0xFFFF)"))]
+    /// We set the size to 64k+1 to allow easy indexing.
+    #[derivative(Default(value = "BytesMut::zeroed(0x10000)"))]
     pub flatmap: BytesMut,
 
     /// Machine zero page bounds.
-    #[derivative(Default(value = "(0x0000, 0x0099)"))]
+    /// This is a tuple of (start, end) addresses.
+    #[derivative(Default(value = "(0x0000, 0x0100)"))]
     pub zero_bounds: (usize, usize),
 
     /// Machine stack page bounds.
+    /// The stack grows downwards from 0x01FF to 0x0100.
     #[derivative(Default(value = "(0x0100, 0x01FF)"))]
     pub stack_bounds: (usize, usize),
 
     /// Machine heap(dynamic memory) bounds.
+    /// This is the only memory that can be dynamically allocated.
+    /// Accessing memory outside of these bounds is undefined behavior.
+    // TODO: FIX: #[derivative(Default(value = "(0x0200, 0xFFFF)"))]
     #[derivative(Default(value = "(0x0200, 0xFFFF)"))]
     pub heap_bounds: (usize, usize),
 
-    /// Virtual addressable heap memory access.
-    #[derivative(Default(value = "(0x0000, 0xFDFF)"))]
-    pub vheap_bounds: (usize, usize),
+    /// Interrupt vector table bounds. Placed at end of heap.
+    ///
+    /// Three vectors are used: reset, irq, nmi. Each vector is 2 bytes.
+    #[derivative(Default(value = "(0xFFFA, 0xFFFB)"))]
+    pub interrupt_bounds: (usize, usize),
+    #[derivative(Default(value = "(0xFFFC, 0xFFFD)"))]
+    pub reset_bounds: (usize, usize),
+    #[derivative(Default(value = "(0xFFFE, 0xFFFF)"))]
+    pub irq_bounds: (usize, usize),
 
     /// Current mode state, this is generally set internally by [step](InstructionController::step).
     #[derivative(Default(value = "Mode::Absolute"))]

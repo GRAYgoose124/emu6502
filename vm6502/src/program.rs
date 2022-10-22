@@ -16,7 +16,13 @@ pub mod prelude {
 pub trait ProgramController {
     /// Insert a hex encoded string `prog` at heap offset `offset`.
     fn insert_program(&mut self, offset: u16, prog: &str);
+    /// Insert a hex encoded string `prog` at heap offset `offset` and set the PC to `offset`.
     fn set_program(&mut self, offset: u16, prog: &str);
+
+    /// Set the interrupt vectors to the given values.
+    fn set_interrupt_vectors(&mut self, nmi: u16, irq: u16, brk: u16);
+    /// Set the interrupt vectors to the values: (0xFFFA, 0xFFFB), (0xFFFC, 0xFFFD), (0xFFFE, 0xFFFF)
+    fn default_interrupt_vectors(&mut self);
 
     /// Run the internal program.
     fn execute(&mut self) -> u64;
@@ -53,6 +59,21 @@ impl ProgramController for VirtualMachine {
         self.registers.pc = offset as u16;
     }
 
+    fn set_interrupt_vectors(&mut self, nmi: u16, irq: u16, brk: u16) {
+        self.flatmap[self.interrupt_bounds.0] = (nmi & 0xFF) as u8;
+        self.flatmap[self.interrupt_bounds.1] = (nmi >> 8) as u8;
+
+        self.flatmap[self.reset_bounds.0] = (irq & 0xFF) as u8;
+        self.flatmap[self.reset_bounds.1] = (irq >> 8) as u8;
+
+        self.flatmap[self.irq_bounds.0] = (brk & 0xFF) as u8;
+        self.flatmap[self.irq_bounds.1] = (brk >> 8) as u8;
+    }
+
+    fn default_interrupt_vectors(&mut self) {
+        self.set_interrupt_vectors(0xFFFA, 0xFFFC, 0xFFFE);
+    }
+
     /// Run the internally set program. Intended API for running programs.
     fn execute(&mut self) -> u64 {
         let old_cycles = self.cycles;
@@ -68,32 +89,11 @@ impl ProgramController for VirtualMachine {
     fn run(&mut self, duration: Duration) -> (u64, Duration) {
         // Save cycles for delta.
         let old_cycles = self.cycles;
-        // For counting strings of null bytes. For now 0x04 bytes buffer program ends.
-        #[cfg(feature = "external_exception_on_null_heap")]
-        let mut null_counter = 0;
 
         let start = Instant::now();
         while start.elapsed() < duration && self.halted == false {
-            if self.bounds_check(self.registers.pc + 1) {
-                self.step();
-
-                #[cfg(feature = "external_exception_on_null_heap")]
-                if self.get_heap(0) == 0x00 {
-                    null_counter += 1;
-                    // Lets only tolerate reading 4 empty bytes
-                    if null_counter > 0x04 {
-                        println!("\n\t -- Null counter exceeded - exiting without halting. -- ");
-
-                        break;
-                    }
-                } else {
-                    // Reset the counter if we read a non-null byte.
-                    null_counter = 0;
-                }
-            } else {
-                #[cfg(feature = "debug_printing")]
-                println!("PC out of bounds! Halting.");
-
+            self.step();
+            if self.registers.pc == self.irq_bounds.0 as u16 {
                 self.halted = true;
             }
         }

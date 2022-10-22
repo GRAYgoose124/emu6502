@@ -199,7 +199,7 @@ impl InstructionController for VirtualMachine {
             // OPC #$BB
             Mode::Immediate => {
                 self.registers.pc += 1;
-                self.get_heap(0)
+                self.get_heap(0x200)
             }
             // OPC
             Mode::Implied => 0,
@@ -387,8 +387,8 @@ impl InstructionController for VirtualMachine {
     /// Execute the an arbitrary op. It returns the vm's current `cycle` count.
     #[bitmatch]
     fn step(&mut self) -> u64 {
-        // Get current op
-        let op = self.get_heap(0);
+        // Get current op TODO: Implement internal virtual bounds.
+        let op = self.get_heap(0x200);
         // Set internal mode.
         let m = self.mode(op);
 
@@ -451,8 +451,8 @@ impl InstructionController for VirtualMachine {
                         self.eor()
                     }
                     0x03 => {
-                        #[cfg(feature = "show_vm_instr_tick_match")]
-                        println!("\t\tADC");
+                        //#[cfg(feature = "show_vm_instr_tick_match")]
+                        //println!("\t\tADC");
                         self.adc()
                     }
                     0x04 => {

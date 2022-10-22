@@ -17,22 +17,21 @@ rand = "0.8.5"
 crate-type = ["rlib"]
 
 [features]
-default = ["check_heap_bounds", "external_exception_on_null_heap"]
+default = ["check_heap_bounds", "passthrough_failure"]
 
 
 # Debug features
 ## Useful features.
 # For using with cargo test to turn off test printing.
 show_test_debug = []
-ops_only = ["show_ticked_instrs"]
+ops_only = ["show_vm_instr_tick_match"]
 pretty_printing = ["ops_only"]
 ## Debug packs
 full_debug_printing = ["show_vm_post_op", "debug_printing", "show_test_debug"]
 debug_printing = ["show_run_time","show_relative_offset", "show_mode", "show_status", "short_printing"]
-short_printing = ["show_vm_instr", "show_vm_instr", "show_vm_tick_arms", "show_ticked_instrs"]
+short_printing = ["show_vm_instr", "show_vm_instr", "show_vm_tick_arms", ]
 ## Debug printing flags
 show_vm_instr = []
-show_ticked_instrs = []
 show_vm_tick_arms = []
 show_vm_post_op = []
 show_mode = []

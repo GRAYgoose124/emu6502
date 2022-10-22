@@ -35,56 +35,113 @@ pub trait Instructions {
     fn bvc(&mut self, offset: u8);
     /// Branch on overflow set
     fn bvs(&mut self, offset: u8);
-
+    /// Bit test
     fn bit(&mut self);
+    /// Break
     fn brk(&mut self);
+    /// Clear carry flag
     fn clc(&mut self);
+    /// Clear decimal mode
     fn cld(&mut self);
+    /// Clear interrupt disable bit
     fn cli(&mut self);
+    /// Clear overflow flag
     fn clv(&mut self);
+    /// Compare
     fn cmp(&mut self);
+    /// Compare X register
     fn cpx(&mut self);
+    /// Compare Y register
     fn cpy(&mut self);
+    /// Decrement memory
     fn dec(&mut self);
+    /// Decrement X register
     fn dex(&mut self);
+    /// Decrement Y register
     fn dey(&mut self);
+    /// Exclusive OR
     fn eor(&mut self);
+    /// Increment memory
     fn inc(&mut self);
+    /// Increment X register
     fn inx(&mut self);
+    /// Increment Y register
     fn iny(&mut self);
+    /// Jump
     fn jmp(&mut self);
+    /// Jump to subroutine
     fn jsr(&mut self);
+    /// Load accumulator
     fn lda(&mut self);
+    /// Load X register
     fn ldx(&mut self);
+    /// Load Y register
     fn ldy(&mut self);
+    /// Logical shift right
     fn lsr(&mut self);
+    /// No operation
     fn nop(&mut self);
+    /// Logical inclusive OR
     fn ora(&mut self);
+    /// Push accumulator
     fn pha(&mut self);
+    /// Push processor status (SR)
     fn php(&mut self);
+    /// Pull accumulator
     fn pla(&mut self);
+    /// Pull processor status (SR)
     fn plp(&mut self);
+    /// Rotate left
     fn rol(&mut self);
+    /// Rotate right
     fn ror(&mut self);
+    /// Return from interrupt
     fn rti(&mut self);
+    /// Return from subroutine
     fn rts(&mut self);
+    /// Subtract with carry
     fn sbc(&mut self);
+    /// Set carry flag
     fn sec(&mut self);
+    /// Set decimal mode
     fn sed(&mut self);
+    /// Set interrupt disable status
     fn sei(&mut self);
+    /// Store accumulator
     fn sta(&mut self);
+    /// Store X register
     fn stx(&mut self);
+    /// Store Y register
     fn sty(&mut self);
+    /// Transfer accumulator to X
     fn tax(&mut self);
+    /// Transfer accumulator to Y
     fn tay(&mut self);
+    /// Transfer stack pointer to X
     fn tsx(&mut self);
+    /// Transfer X to accumulator
     fn txa(&mut self);
+    /// Transfer X to stack pointer
     fn txs(&mut self);
+    /// Transfer Y to accumulator
     fn tya(&mut self);
 }
 
 impl Instructions for VirtualMachine {
-    fn brk(&mut self) {}
+    fn brk(&mut self) {
+        self.registers.pc += 1;
+        self.push((self.registers.pc >> 8) as u8);
+        self.push(self.registers.pc as u8);
+
+        // Set the break flag inline, as it's not actually set in the status register.
+        self.push(self.registers.sr | 0x10);
+        self.set_status(Status::Interrupt, true);
+
+        // Load the interrupt vector from 0xFFFE and 0xFFFF.
+        let jump = ((self.get_heap(0xFFFF) as u16) << 8) | self.get_heap(0xFFFE) as u16;
+        eprintln!("BRK vector: {:04X}", jump);
+        self.registers.pc = jump;
+    }
 
     fn adc(&mut self) {
         let value = self.fetch(); // Fetch is directed by the internal mode.
@@ -307,18 +364,37 @@ impl Instructions for VirtualMachine {
 
     // Jumping/Procedure OPs
     fn jmp(&mut self) {
-        //let addr = self.fetch();
+        let addr = self.fetch_addr();
+        self.registers.pc = addr;
     }
 
     fn jsr(&mut self) {
-        // todo!();
+        let addr = self.fetch();
+
+        // Push the return address onto the stack
+        self.push((self.registers.pc >> 8) as u8);
+        self.push(self.registers.pc as u8);
+
+        // Jump to the address
+        self.registers.pc = addr as u16;
     }
 
     fn rti(&mut self) {
-        // todo!();
+        let sts = self.pop();
+        // Pull SR and ignore BRK and bit 5.
+        self.registers.sr = sts & 0b0011_1111;
+        // Pull PC
+        self.registers.pc = self.pop() as u16;
+        self.registers.pc |= (self.pop() as u16) << 8;
     }
 
-    fn rts(&mut self) {}
+    fn rts(&mut self) {
+        // Pull PC from stack.
+        let addr = self.pop() as u16;
+        let addr = addr | (self.pop() as u16) << 8;
+
+        self.registers.pc = addr + 1;
+    }
 
     // Flag set OPs
     fn clc(&mut self) {

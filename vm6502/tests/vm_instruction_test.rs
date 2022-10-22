@@ -34,7 +34,6 @@ fn and_imd() {
     assert_eq!(vm.registers.ac, 0x00);
 }
 
-
 #[test]
 fn asl_cover() {
     let mut vm = VirtualMachine::new();
