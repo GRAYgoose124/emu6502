@@ -1,6 +1,4 @@
 use crate::prelude::*;
-#[cfg(feature = "show_status")]
-use crate::status;
 
 pub mod prelude {
     pub use crate::vm::instructions::Instructions;
@@ -129,7 +127,15 @@ pub trait Instructions {
 
 impl Instructions for VirtualMachine {
     fn brk(&mut self) {
-        self.registers.pc += 1;
+        // Stop vm execution if we try incrementing from 0xFFFF
+        // Not spec compliant.
+        if self.registers.pc >= (u16::MAX - 1) {
+            self.halted = true;
+            return;
+        }
+
+        self.registers.pc = self.registers.pc.wrapping_add(1);
+
         self.push((self.registers.pc >> 8) as u8);
         self.push(self.registers.pc as u8);
 
@@ -138,8 +144,10 @@ impl Instructions for VirtualMachine {
         self.set_status(Status::Interrupt, true);
 
         // Load the interrupt vector from 0xFFFE and 0xFFFF.
-        let jump = ((self.get_heap(0xFFFF) as u16) << 8) | self.get_heap(0xFFFE) as u16;
-        eprintln!("BRK vector: {:04X}", jump);
+        // Subtracting heap offset to get the actual address.
+        let jump = ((self.get_heap(0xFFFF - self.heap_bounds.0 as u16) as u16) << 8)
+            | self.get_heap(0xFFFE - self.heap_bounds.0 as u16) as u16;
+
         self.registers.pc = jump;
     }
 
@@ -364,19 +372,21 @@ impl Instructions for VirtualMachine {
 
     // Jumping/Procedure OPs
     fn jmp(&mut self) {
-        let addr = self.fetch_addr();
-        self.registers.pc = addr;
+        let haddr = self.fetch();
+        let laddr = self.fetch();
+
+        self.registers.pc = (haddr as u16) << 8 | laddr as u16;
     }
 
     fn jsr(&mut self) {
-        let addr = self.fetch();
+        let haddr = self.fetch();
+        let laddr = self.fetch();
 
-        // Push the return address onto the stack
-        self.push((self.registers.pc >> 8) as u8);
-        self.push(self.registers.pc as u8);
+        let pc = self.registers.pc - 1;
+        self.push((pc >> 8) as u8);
+        self.push(pc as u8);
 
-        // Jump to the address
-        self.registers.pc = addr as u16;
+        self.registers.pc = (haddr as u16) << 8 | laddr as u16;
     }
 
     fn rti(&mut self) {

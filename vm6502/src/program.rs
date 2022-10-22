@@ -56,7 +56,7 @@ impl ProgramController for VirtualMachine {
     /// Replaces and runs the program at `offset`.
     fn set_program(&mut self, offset: u16, prog: &str) {
         self.insert_program(offset, prog);
-        self.registers.pc = offset as u16;
+        self.registers.pc = offset;
     }
 
     fn set_interrupt_vectors(&mut self, nmi: u16, irq: u16, brk: u16) {
@@ -93,6 +93,7 @@ impl ProgramController for VirtualMachine {
         let start = Instant::now();
         while start.elapsed() < duration && self.halted == false {
             self.step();
+
             if self.registers.pc == self.irq_bounds.0 as u16 {
                 self.halted = true;
             }

@@ -5,7 +5,7 @@ use vm6502::prelude::*;
 
 fn do_program(vm: &mut VirtualMachine, offset: u16, prog: &str) {
     vm.set_program(offset, prog);
-    vm.set_interrupt_vectors(0x0400, 0x0400, 0x0400);
+    vm.default_interrupt_vectors();
     println!("Loaded program and set PC appropriately:\n{}\n", prog);
 
     println!("VM state before execution: {:?}\n", vm);
