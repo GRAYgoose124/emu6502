@@ -10,7 +10,7 @@ pub mod prelude {
 ///
 /// This is placed in a separate trait due to the inherent number of instructions.
 pub trait Instructions {
-    fn abs_zp_acc_op(&mut self, operation: fn(u8) -> u8);
+    fn abs_zp_acc_op(&mut self, operation: fn(u8) -> u8) -> u8;
     /// Add with carry
     fn adc(&mut self);
     /// Logical AND
@@ -90,14 +90,15 @@ impl Instructions for VirtualMachine {
         let result = self.registers.ac as u16 + value as u16;
         let (carry, carried) = (result > 0xFF, result & 0xFF);
 
-        #[cfg(feature = "show_vm_instr")]
-        println!(
-            "\t\tADC: {:02X} + {:02X} = {:02X}, Carry: {:02X}",
-            self.registers.ac,
-            value,
-            carried,
-            status!(Status::Carry) & self.registers.sr
-        );
+        self.registers.ac = carried as u8;
+        self.set_status(Status::Carry, carry);
+    }
+
+    fn sbc(&mut self) {
+        let value = self.fetch(); // Fetch is directed by the internal mode.
+
+        let result = self.registers.ac as u16 - value as u16;
+        let (carry, carried) = (result > 0xFF, result & 0xFF);
 
         self.registers.ac = carried as u8;
         self.set_status(Status::Carry, carry);
@@ -105,86 +106,55 @@ impl Instructions for VirtualMachine {
 
     fn and(&mut self) {
         let value = self.fetch();
-
         self.registers.ac &= value;
-
-        #[cfg(feature = "show_vm_instr")]
-        println!(
-            "\t\tAND: {} & {} = {}",
-            self.registers.ac, value, self.registers.ac
-        );
 
         self.set_status(Status::Zero, self.registers.ac == 0);
     }
 
-    fn asl(&mut self) {
+    fn eor(&mut self) {
         let value = self.fetch();
+        self.registers.ac ^= value;
 
-        let result = value << 1;
-        let carry = result & 0x80 != 0;
+        self.set_status(Status::Zero, self.registers.ac == 0);
+    }
 
-        #[cfg(feature = "show_vm_instr")]
-        println!("\t\tASL: {} << 1 = {}, carry: {}", value, result, carry);
+    fn ora(&mut self) {
+        let data = self.fetch();
+        self.registers.ac |= data;
 
-        self.set_status(Status::Carry, carry);
-        self.set_status(Status::Zero, result == 0);
-
-        self.registers.ac = result;
+        self.set_status(Status::Zero, self.registers.ac == 0);
+        self.set_status(Status::Negative, self.registers.ac & 0x80 != 0);
     }
 
     fn bcc(&mut self, offset: u8) {
-        #[cfg(feature = "show_vm_instr")]
-        println!("\t\tBCC: 0x{:02X}", offset);
-
         self.relative_jump(offset, !self.get_status(Status::Carry));
     }
 
     fn bcs(&mut self, offset: u8) {
-        #[cfg(feature = "show_vm_instr")]
-        println!("\t\tBCS: 0x{:02X}", offset);
-
         self.relative_jump(offset, self.get_status(Status::Carry));
     }
 
     fn beq(&mut self, offset: u8) {
-        #[cfg(feature = "show_vm_instr")]
-        println!("\t\tBEQ: 0x{:02X}", offset);
-
         self.relative_jump(offset, self.get_status(Status::Zero));
     }
 
     fn bne(&mut self, offset: u8) {
-        #[cfg(feature = "show_vm_instr")]
-        println!("\t\tBEQ: 0x{:02X}", offset);
-
         self.relative_jump(offset, !self.get_status(Status::Zero));
     }
 
     fn bpl(&mut self, offset: u8) {
-        #[cfg(feature = "show_vm_instr")]
-        println!("\t\tBPL: 0x{:02X}", offset);
-
         self.relative_jump(offset, !self.get_status(Status::Negative));
     }
 
     fn bvc(&mut self, offset: u8) {
-        #[cfg(feature = "show_vm_instr")]
-        println!("\t\tBVC: 0x{:02X}", offset);
-
         self.relative_jump(offset, !self.get_status(Status::Overflow));
     }
 
     fn bvs(&mut self, offset: u8) {
-        #[cfg(feature = "show_vm_instr")]
-        println!("\t\tBVS: 0x{:02X}", offset);
-
         self.relative_jump(offset, self.get_status(Status::Overflow));
     }
 
     fn bmi(&mut self, offset: u8) {
-        #[cfg(feature = "show_vm_instr")]
-        println!("\t\tBMI: 0x{:02X}", offset);
-
         self.relative_jump(offset, self.get_status(Status::Negative));
     }
 
@@ -222,22 +192,14 @@ impl Instructions for VirtualMachine {
         // todo!();
     }
 
-    fn dec(&mut self) {
-        // todo!();
-    }
+    // Incrementing OPs.
+    fn dec(&mut self) {}
 
-    fn dex(&mut self) {
-        // todo!();
-    }
+    fn dex(&mut self) {}
 
     fn dey(&mut self) {
         // todo!();
     }
-
-    fn eor(&mut self) {
-        // todo!();
-    }
-
     fn inc(&mut self) {
         // todo!();
     }
@@ -250,20 +212,13 @@ impl Instructions for VirtualMachine {
         // todo!();
     }
 
-    fn jmp(&mut self) {
-        //let addr = self.fetch();
-    }
-
-    fn jsr(&mut self) {
-        // todo!();
-    }
-
+    /// Load Instructions;
     fn lda(&mut self) {
         let data = self.fetch();
         self.registers.ac = data;
 
-        self.set_status(Status::Zero, self.registers.ac == 0);
-        self.set_status(Status::Negative, self.registers.ac & 0x80 != 0);
+        self.set_status(Status::Zero, data == 0);
+        self.set_status(Status::Negative, data & 0x80 != 0);
     }
 
     fn ldx(&mut self) {
@@ -282,87 +237,9 @@ impl Instructions for VirtualMachine {
         self.set_status(Status::Negative, data & 0x80 != 0);
     }
 
-    fn lsr(&mut self) {
-        let data = self.fetch();
-
-        // If there's a 1 in the 1's place, it will shifted off.
-        let carried = |f| f & 0x01 != 0;
-
-        // We gotta be able to refactor out all these matches.
-        let (c, r) = match self.addr_mode {
-            Mode::Accumulator => {
-                let carry = carried(self.registers.ac);
-                let result = self.registers.ac >> 1;
-                self.registers.ac = result;
-                (carry, result)
-            }
-            Mode::ZeroPage => {
-                let carry = carried(self.flatmap[data as usize]);
-                let result = self.flatmap[data as usize] >> 1;
-                self.flatmap[data as usize] = result;
-                (carry, result)
-            }
-            Mode::ZeroPageX => {
-                let carry = carried(self.flatmap[(data + self.registers.x) as usize]);
-                let result = self.flatmap[(data + self.registers.x) as usize] >> 1;
-                self.flatmap[(data + self.registers.x) as usize] = result;
-                (carry, result)
-            }
-            Mode::Absolute => {
-                let carry = carried(self.flatmap[data as usize]);
-                let result = self.flatmap[data as usize] >> 1;
-                self.flatmap[data as usize] = result;
-                (carry, result)
-            }
-            Mode::AbsoluteX => {
-                let carry = carried(self.flatmap[(data + self.registers.x) as usize]);
-                let result = self.flatmap[(data + self.registers.x) as usize] >> 1;
-                self.flatmap[(data + self.registers.x) as usize] = result;
-                (carry, result)
-            }
-            _ => panic!("Invalid addressing mode for LSR"),
-        };
-
-        // Set the carry flag when losing the 1's place.
-        self.set_status(Status::Carry, c);
-        self.set_status(Status::Zero, r == 0);
-        self.set_status(Status::Negative, false);
-    }
-
-    fn nop(&mut self) {}
-
-    fn ora(&mut self) {
-        let data = self.fetch();
-        self.registers.ac |= data;
-
-        self.set_status(Status::Zero, self.registers.ac == 0);
-        self.set_status(Status::Negative, self.registers.ac & 0x80 != 0);
-    }
-
-    fn pha(&mut self) {
-        self.push(self.registers.ac);
-    }
-
-    fn php(&mut self) {
-        self.push(self.registers.sr);
-    }
-
-    fn pla(&mut self) {
-        let sts = self.pop();
-        self.registers.ac = sts;
-
-        self.set_status(Status::Zero, sts == 0);
-        self.set_status(Status::Negative, sts & 0x80 != 0);
-    }
-
-    fn plp(&mut self) {
-        let sts = self.pop();
-        self.registers.sr = sts;
-    }
-
     // TODO: Move to separate mod, general_instructions?
     /// Accumulator <-> ZeroPage, Absolute, ZeroPageX and AbsoluteX
-    fn abs_zp_acc_op(&mut self, operation: fn(u8) -> u8) {
+    fn abs_zp_acc_op(&mut self, operation: fn(u8) -> u8) -> u8 {
         let data = self.fetch();
 
         let carried = |f: u8| f & 0x01 != 0;
@@ -388,82 +265,119 @@ impl Instructions for VirtualMachine {
         self.set_status(Status::Carry, c);
         self.set_status(Status::Zero, r == 0);
         self.set_status(Status::Negative, r & 0x80 != 0);
+
+        data
     }
 
-    fn rol(&mut self) {
+    fn lsr(&mut self) {
+        self.abs_zp_acc_op(|d| d >> 1);
+    }
+
+    fn asl(&mut self) {
         self.abs_zp_acc_op(|d| d << 1);
     }
 
+    fn rol(&mut self) {
+        let data = self.abs_zp_acc_op(|d| d << 1);
+        let sts = self.get_status(Status::Carry);
+        if sts {
+            match self.addr_mode {
+                Mode::Accumulator => self.registers.ac |= 0x01,
+                Mode::ZeroPage => self.flatmap[data as usize] |= 0x01,
+                Mode::ZeroPageX => self.flatmap[(data + self.registers.x) as usize] |= 0x01,
+                Mode::Absolute => self.flatmap[data as usize] |= 0x01,
+                Mode::AbsoluteX => self.flatmap[(data + self.registers.x) as usize] |= 0x01,
+
+                _ => panic!("Invalid addressing mode for ROL"),
+            }
+        }
+    }
+
     fn ror(&mut self) {
-        self.abs_zp_acc_op(|d| d >> 1);
+        let data = self.abs_zp_acc_op(|d| d >> 1);
+        let sts = self.get_status(Status::Carry);
+        if sts {
+            match self.addr_mode {
+                Mode::Accumulator => self.registers.ac |= 0x80,
+                Mode::ZeroPage => self.flatmap[data as usize] |= 0x80,
+                Mode::ZeroPageX => self.flatmap[(data + self.registers.x) as usize] |= 0x80,
+                Mode::Absolute => self.flatmap[data as usize] |= 0x80,
+                Mode::AbsoluteX => self.flatmap[(data + self.registers.x) as usize] |= 0x80,
+
+                _ => panic!("Invalid addressing mode for ROL"),
+            }
+        }
+    }
+
+    // Jumping/Procedure OPs
+    fn jmp(&mut self) {
+        //let addr = self.fetch();
+    }
+
+    fn jsr(&mut self) {
+        // todo!();
     }
 
     fn rti(&mut self) {
         // todo!();
     }
 
-    fn rts(&mut self) {
-        // todo!();
-    }
+    fn rts(&mut self) {}
 
-    fn sbc(&mut self) {
-        // todo!();
-    }
-
+    // Flag set OPs
     fn sec(&mut self) {
-        // todo!();
+        self.set_status(Status::Carry, true);
     }
 
     fn sed(&mut self) {
-        // todo!();
+        self.set_status(Status::Decimal, true);
     }
 
     fn sei(&mut self) {
-        // todo!();
+        // Technically interrupt disable.
+        self.set_status(Status::Interrupt, true);
     }
 
+    // Store Operations
     fn sta(&mut self) {
-        // todo!();
+        let data = self.fetch();
+        // TODO: This code duplication can likely be refactored, similarly to ROL/ROR, but more general?
+        match self.addr_mode {
+            Mode::ZeroPage => self.flatmap[data as usize] = self.registers.ac,
+            Mode::ZeroPageX => self.flatmap[(data + self.registers.x) as usize] = self.registers.ac,
+            Mode::Absolute => self.flatmap[data as usize] = self.registers.ac,
+            Mode::AbsoluteX => self.flatmap[(data + self.registers.x) as usize] = self.registers.ac,
+            Mode::AbsoluteY => self.flatmap[(data + self.registers.y) as usize] = self.registers.ac,
+            Mode::IndirectX => self.flatmap[(data + self.registers.x) as usize] = self.registers.ac,
+            Mode::IndirectY => self.flatmap[(data + self.registers.y) as usize] = self.registers.ac,
+            _ => panic!("Invalid addressing mode for STA"),
+        }
     }
 
     fn stx(&mut self) {
-        // todo!();
+        let data = self.fetch();
+        match self.addr_mode {
+            Mode::ZeroPage => self.flatmap[data as usize] = self.registers.x,
+            Mode::ZeroPageY => self.flatmap[(data + self.registers.y) as usize] = self.registers.x,
+            Mode::Absolute => self.flatmap[data as usize] = self.registers.x,
+            _ => panic!("Invalid addressing mode for STX"),
+        }
     }
 
     fn sty(&mut self) {
-        // TODO: Factor out these matches. Set Heap OP
+        let data = self.fetch();
         match self.addr_mode {
-            Mode::ZeroPage => {
-                let addr = self.fetch() as usize;
-                self.flatmap[addr] = self.registers.y; // Only 0x00 - 0xFF, self.fetch returns u8 so this is guaranteed.
-            }
-            Mode::ZeroPageX => {
-                let addr = (self.fetch() as usize + self.registers.x as usize) & 0xFF;
-                self.flatmap[addr] = self.registers.y;
-            }
-            Mode::Absolute => {
-                let addr = self.fetch() as usize;
-                self.flatmap[addr] = self.registers.y; // TODO: Check if this is valid, not sure about Absolute mode.
-            }
+            Mode::ZeroPage => self.flatmap[data as usize] = self.registers.y,
+            Mode::ZeroPageX => self.flatmap[(data + self.registers.x) as usize] = self.registers.y,
+            Mode::Absolute => self.flatmap[data as usize] = self.registers.y,
             _ => panic!("Invalid addressing mode for STY"),
         }
     }
 
+    // Transfer register Ops.
     fn tax(&mut self) {
         self.registers.x = self.registers.ac;
         // TODO: We can definitely create a helper for the transfer instructions.
-        self.set_status(Status::Zero, self.registers.x == 0);
-        self.set_status(Status::Negative, self.registers.x & 0x80 != 0);
-    }
-
-    fn tay(&mut self) {
-        self.registers.y = self.registers.ac;
-        self.set_status(Status::Zero, self.registers.y == 0);
-        self.set_status(Status::Negative, self.registers.y & 0x80 != 0);
-    }
-
-    fn tsx(&mut self) {
-        self.registers.x = self.registers.sp;
         self.set_status(Status::Zero, self.registers.x == 0);
         self.set_status(Status::Negative, self.registers.x & 0x80 != 0);
     }
@@ -474,8 +388,10 @@ impl Instructions for VirtualMachine {
         self.set_status(Status::Negative, self.registers.ac & 0x80 != 0);
     }
 
-    fn txs(&mut self) {
-        self.registers.sp = self.registers.x;
+    fn tay(&mut self) {
+        self.registers.y = self.registers.ac;
+        self.set_status(Status::Zero, self.registers.y == 0);
+        self.set_status(Status::Negative, self.registers.y & 0x80 != 0);
     }
 
     fn tya(&mut self) {
@@ -483,4 +399,38 @@ impl Instructions for VirtualMachine {
         self.set_status(Status::Zero, self.registers.ac == 0);
         self.set_status(Status::Negative, self.registers.ac & 0x80 != 0);
     }
+
+    fn tsx(&mut self) {
+        self.registers.x = self.registers.sp;
+        self.set_status(Status::Zero, self.registers.x == 0);
+        self.set_status(Status::Negative, self.registers.x & 0x80 != 0);
+    }
+
+    fn txs(&mut self) {
+        self.registers.sp = self.registers.x;
+    }
+
+    // Register Push/Pull Ops
+    fn pha(&mut self) {
+        self.push(self.registers.ac);
+    }
+
+    fn php(&mut self) {
+        self.push(self.registers.sr);
+    }
+
+    fn pla(&mut self) {
+        let sts = self.pop();
+        self.registers.ac = sts;
+
+        self.set_status(Status::Zero, sts == 0);
+        self.set_status(Status::Negative, sts & 0x80 != 0);
+    }
+
+    fn plp(&mut self) {
+        let sts = self.pop();
+        self.registers.sr = sts;
+    }
+
+    fn nop(&mut self) {}
 }
