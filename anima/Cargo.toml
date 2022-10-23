@@ -2,9 +2,9 @@
 name = "anima6502"
 version = "0.1.1"
 edition = "2021"
-description = "Python bindings for vm6502."
+description = "An anima6502 subcrate which supplies Python bindings to vm6502."
 license = "GPL-3.0-or-later"
-repository = "https://github.com/GRAYgoose124/anima6502"
+repository = "https://github.com/GRAYgoose124/emu6502"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
@@ -12,7 +12,7 @@ name = "anima6502"
 crate-type = ["cdylib"]
 
 [dependencies]
-vm6502 = "^0.1.0"
+vm6502 = "0.1.0"
 pyo3 = { version = "0.17.1", features = ["extension-module"] }
 
 
