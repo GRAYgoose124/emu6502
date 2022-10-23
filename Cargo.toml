@@ -2,8 +2,13 @@
 name = "emu6502"
 version = "0.1.0"
 edition = "2021"
+description = "A 6502 emulator using the vm6502 backend."
+license = "GPL-3.0-or-later"
+repository = "https://github.com/GRAYgoose124/emu6502"
 
 [dependencies]
+vm6502 = "0.1.0"
+
 arrayvec = "0.7.2"
 bytes = "1.2.1"
 hex = "0.4.3"
@@ -11,8 +16,6 @@ rand = "0.8.5"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[dependencies.vm6502]
-path = "vm6502"
 
 [features]
 defaults = ["vm6502/pretty_printing"]

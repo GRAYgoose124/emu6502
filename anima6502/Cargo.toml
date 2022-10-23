@@ -2,6 +2,8 @@
 name = "anima6502"
 version = "0.1.0"
 edition = "2021"
+description = "Python bindings for vm6502."
+license = "GPL-3.0-or-later"
 repository = "https://github.com/GRAYgoose124/emu6502"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -10,10 +12,9 @@ name = "anima6502"
 crate-type = ["cdylib"]
 
 [dependencies]
+vm6502 = "0.1.0"
 pyo3 = { version = "0.17.1", features = ["extension-module"] }
 
-[dependencies.vm6502]
-path = "../vm6502"
 
 # TODO: If we could get maturin to compile the script front end, that'd be great.
 [package.metadata.maturin]

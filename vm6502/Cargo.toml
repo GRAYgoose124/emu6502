@@ -3,7 +3,8 @@ name = "vm6502"
 version = "0.1.0"
 edition = "2021"
 description = "A 6502 virtual machine backend."
-license = "GPLv3"
+license = "GPL-3.0-or-later"
+repository = "https://github.com/GRAYgoose124/emu6502"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

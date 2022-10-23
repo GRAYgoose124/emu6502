@@ -1,6 +1,9 @@
+# vm6502
+As the name suggests, this crate is the core 6502 virtual machine. Currently, if you'd like 
+more information, please generate and check the docs with `cargo docs --open` and direct yourself 
+to the vm6502 crate.
 
-
-To run the virtual cpu tests, first cd here and run:
+To run the virtual cpu tests, first cd to the `vm6502` directory then run:
     cargo test
 
 ## Features
