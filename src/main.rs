@@ -1,8 +1,13 @@
-/// Frontend for vm6502.
+//! Frontend for vm6502.
+//!
+//! This crate provides a user-end accessible binary to use the virtual machine.
+//!
+//! It is meant for demonstration purposes towards using the [](vm6502) crate.
 use std::time::Duration;
 
 use vm6502::prelude::*;
 
+// Run the given program on the given vitual machine.
 fn do_program(vm: &mut VirtualMachine, offset: u16, prog: &str) {
     vm.set_program(offset, prog);
     vm.default_interrupt_vectors();
