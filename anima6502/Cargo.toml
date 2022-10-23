@@ -1,11 +1,12 @@
 [package]
-name = "anima"
+name = "anima6502"
 version = "0.1.0"
 edition = "2021"
+repository = "https://github.com/GRAYgoose124/emu6502"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
-name = "anima"
+name = "anima6502"
 crate-type = ["cdylib"]
 
 [dependencies]
