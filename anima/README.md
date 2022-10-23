@@ -1,9 +1,10 @@
 # Anima ![](https://github.com/GRAYgoose124/emu6502/actions/workflows/anima_tests.yml/badge.svg)
-Anima provides Python bindings for the virtual machine from crate::vm6502.
+Anima provides Python bindings for the virtual machine from crate::vm6502. It's primary frontend is found in [emu6502](https://crates.io/crates/emu6502).
 
-Anima uses maturin build tooling.
+Anima uses maturin build tooling. 
 
-It's recommended you first create a virtual env in the root of emu6502 before installing.
+    If you are not using anima with the emu6502 crate please consider this an extreme work in progress.
+
 ## Setup
 ### Build
 ```bash

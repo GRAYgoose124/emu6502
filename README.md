@@ -1,9 +1,15 @@
-# emu6502 ![](https://github.com/GRAYgoose124/emu6502/actions/workflows/tests.yml/badge.svg)
+# emu6502 ![](https://github.com/GRAYgoose124/emu6502/actions/workflows/tests.yml/badge.svg) ![](https://img.shields.io/crates/v/emu6502.svg)
 
 emu6502 is a full 6502 emulation, testing, and debugging suite.
 
-It uses [vm6502](https://github.com/GRAYgoose124/vm6502) as a backend.
-It also uses [anima6502](https://github.com/GRAYgoose124/anima6502) to utilize python bindings for the vm.
+It was designed without much knowledge of the 6502 specification. However, it is intended to be fully capable of supporting real binary roms, and thus full test coverage is planned to develop organically.
+
+    Notice: Currently there are no frontend features, as the backend is still being developed, generating the core debugging library in the process.
+
+It uses [vm6502](https://github.com/GRAYgoose124/vm6502) as a backend.  Also found on [crates.io](https://crates.io/crates/vm6502).
+
+It provides a frontend binary [crate](https://crates.io/crates/emu6502).
+
 
 ## How to use   
 ```bash
@@ -23,7 +29,7 @@ It also uses [anima6502](https://github.com/GRAYgoose124/anima6502) to utilize p
     > ./target/release/emu650
 ```
 
-# Anima Sub-crate ![](https://github.com/GRAYgoose124/emu6502/actions/workflows/anima_tests.yml/badge.svg)
+# Anima Sub-crate ![](https://github.com/GRAYgoose124/emu6502/actions/workflows/anima_tests.yml/badge.svg) ![](https://img.shields.io/crates/v/anima6502.svg) 
 Anima provides Python bindings for the virtual machine from crate::vm6502.
 
 Anima uses maturin build tooling.
