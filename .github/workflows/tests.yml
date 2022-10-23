@@ -18,7 +18,7 @@ jobs:
           command: check
 
   test:
-    name: Test emu6502vm
+    name: Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -30,22 +30,6 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-
-
-  test_cpu:
-    name: Test vm6502
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test 
-          args: -p vm6502
 
   fmt:
     name: Rustfmt
